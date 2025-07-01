@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}";
+self.__REACT_LOADABLE_MANIFEST="{\"authors.tsx -> ../components/AuthorsGrid\":{\"id\":\"authors.tsx -> ../components/AuthorsGrid\",\"files\":[\"static/chunks/components_AuthorsGrid_tsx.js\"]}}"
