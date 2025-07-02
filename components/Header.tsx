@@ -19,8 +19,8 @@ export default function Header() {
           <Image
             src="/Logo_Diariun.png"
             alt="Diariun Logo"
-            width={240}
-            height={60}
+            width={360}
+            height={100}
             style={{ objectFit: "contain", height: "auto" }}
             priority
           />
