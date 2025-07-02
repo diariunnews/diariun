@@ -4,32 +4,32 @@ const authors = [
   {
     id: "author_001",
     name: "Carol Holt",
-    specialty: "Health & Wellness",
-    image: "/authors/female-114.jpg",
+    bio: "Health & Wellness",
+    photo: "/authors/female-114.jpg",
   },
   {
     id: "author_002",
     name: "Daniel Reyes",
-    specialty: "Finance & Investing",
-    image: "/authors/male-001.jpg",
+    bio: "Finance & Investing",
+    photo: "/authors/male-001.jpg",
   },
   {
     id: "author_003",
     name: "Aisha Khan",
-    specialty: "Tech & Innovation",
-    image: "/authors/female-115.jpg",
+    bio: "Tech & Innovation",
+    photo: "/authors/female-115.jpg",
   },
   {
     id: "author_004",
     name: "Javier López",
-    specialty: "Politics & Society",
-    image: "/authors/male-002.jpg",
+    bio: "Politics & Society",
+    photo: "/authors/male-002.jpg",
   },
   {
     id: "author_005",
     name: "Emily Zhang",
-    specialty: "Culture & Media",
-    image: "/authors/female-116.jpg",
+    bio: "Culture & Media",
+    photo: "/authors/female-116.jpg",
   },
 ];
 
