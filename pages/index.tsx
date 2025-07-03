@@ -16,21 +16,37 @@ export default function Home() {
 
       <Header />
 
-      <main style={{ textAlign: "center", padding: "2rem" }}>
-        <Image
-          src="/Foto_Portada_Diarium.jpg"
-          alt="Foto de portada Diariun"
-          width={800}
-          height={400}
-          style={{ borderRadius: "12px", maxWidth: "100%", height: "auto" }}
-        />
-        <h1 style={{ marginTop: "2rem", fontSize: "2rem" }}>Bienvenido a Diariun</h1>
-        <p style={{ marginTop: "1rem", fontSize: "1.2rem" }}>
-          Publica artículos, explora autores y accede a contenido de calidad para SEO.
-        </p>
-        <p style={{ marginTop: "1rem" }}>
-          Haz clic en <strong>Autores</strong> arriba para ver a nuestros escritores.
-        </p>
+      <main
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "2rem",
+          minHeight: "70vh",
+          gap: "2rem",
+        }}
+      >
+        <div style={{ flex: "1 1 400px", maxWidth: "600px" }}>
+          <h1 style={{ fontSize: "2rem" }}>Welcome to Diariun</h1>
+          <p style={{ marginTop: "1rem", fontSize: "1.2rem" }}>
+            Publica artículos, explora autores y accede a contenido de calidad para SEO.
+          </p>
+          <p style={{ marginTop: "1rem" }}>
+            Haz clic en <strong>Autores</strong> arriba para ver a nuestros escritores.
+          </p>
+        </div>
+
+        <div style={{ flex: "1 1 400px", maxWidth: "600px", textAlign: "center" }}>
+          <Image
+            src="/Foto_Portada_Diarium.jpg"
+            alt="Foto de portada Diariun"
+            width={600}
+            height={400}
+            style={{ borderRadius: "12px", maxWidth: "100%", height: "auto" }}
+            priority
+          />
+        </div>
       </main>
 
       <footer
