@@ -2,6 +2,8 @@ import Header from "../components/Header";
 import Image from "next/image";
 import Head from "next/head";
 import Link from "next/link";
+import Footer from "../components/Footer";
+import { getDefaultAutoSelectFamily } from "net";
 
 export default function Home() {
   return (
@@ -28,13 +30,11 @@ export default function Home() {
         }}
       >
         <div style={{ flex: "1 1 400px", maxWidth: "600px" }}>
-          <h1 style={{ fontSize: "2rem" }}>Welcome to Diariun</h1>
-          <p style={{ marginTop: "1rem", fontSize: "1.2rem" }}>
-            Publica artículos, explora autores y accede a contenido de calidad para SEO.
+          <h1 style={{ fontSize: "3.5rem" }}>Welcome to Diariun</h1>
+          <p style={{ marginTop: "0.5rem", fontSize: "1.5rem" }}>
+            Publish articles, explore authors, and access quality content for SEO.
           </p>
-          <p style={{ marginTop: "1rem" }}>
-            Haz clic en <strong>Autores</strong> arriba para ver a nuestros escritores.
-          </p>
+         
         </div>
 
         <div style={{ flex: "1 1 400px", maxWidth: "600px", textAlign: "center" }}>
@@ -62,7 +62,7 @@ export default function Home() {
           borderTop: "1px solid #ddd",
         }}
       >
-        <Link href="#">Sobre nosotros</Link>
+        <Link className="no-underline text-inherit" href="#">Sobre nosotros</Link>
         <Link href="#">Ayuda</Link>
         <Link href="#">Negocios</Link>
         <Link href="#">Términos</Link>

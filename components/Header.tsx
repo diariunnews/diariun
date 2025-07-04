@@ -7,7 +7,7 @@ export default function Header() {
       style={{
         borderBottom: "1px solid #ddd",
         padding: "0.5rem 0",
-        fontFamily: "'Georgia', serif",
+        fontFamily: "Libre Baskerville",
         width: "100%",
       }}
     >
