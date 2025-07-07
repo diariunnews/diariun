@@ -1,0 +1,12 @@
+/* styles/globals.css */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline; /* O pon 'none' si tampoco quieres subrayado al pasar el ratón */
+}
+
+/* Puedes poner aquí más estilos globales */

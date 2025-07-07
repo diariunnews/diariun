@@ -62,7 +62,7 @@ export default function Home() {
           borderTop: "1px solid #ddd",
         }}
       >
-        <Link className="no-underline text-inherit" href="#">Sobre nosotros</Link>
+        <Link color="inherit" href="#">Sobre nosotros</Link>
         <Link href="#">Ayuda</Link>
         <Link href="#">Negocios</Link>
         <Link href="#">Términos</Link>
