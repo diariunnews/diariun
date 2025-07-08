@@ -1,3 +1,5 @@
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import AuthorsGrid from "../components/AuthorsGrid";
 
 const authors = [
@@ -35,9 +37,13 @@ const authors = [
 
 export default function AuthorsPage() {
   return (
-    <main className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Our Authors</h1>
-      <AuthorsGrid authors={authors} />
-    </main>
+    <>
+      <Header />
+      <main className="p-8">
+        <h1 className="text-3xl font-bold mb-6">Our Authors</h1>
+        <AuthorsGrid authors={authors} />
+      </main>
+      <Footer />
+    </>
   );
 }

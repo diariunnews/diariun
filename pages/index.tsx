@@ -17,7 +17,7 @@ export default function Home() {
       </Head>
 
       <Header />
-
+            
       <main
         style={{
           display: "flex",
@@ -34,7 +34,7 @@ export default function Home() {
           <p style={{ marginTop: "0.5rem", fontSize: "1.5rem" }}>
             Publish articles, explore authors, and access quality content for SEO.
           </p>
-         
+
         </div>
 
         <div style={{ flex: "1 1 400px", maxWidth: "600px", textAlign: "center" }}>
