@@ -27,10 +27,10 @@
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
-    "/authors": [
+    "/articles/[slug]": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/authors.js"
+      "static/chunks/pages/articles/[slug].js"
     ]
   },
   "ampFirstPages": []
