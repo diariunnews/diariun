@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const categories = [
-  "Tecnología", "Negocios", "Cultura", "Ciencia", "Sociedad", "Deportes", "Salud", "Viajes"
+  "Tecnología", "Negocios", "Cultura", "Ciencia", "Sociedad", "Deportes", "Salud", "General"
 ];
 
 // Lee los 10 últimos artículos, ordenados por fecha
@@ -16,14 +16,12 @@ export async function getStaticProps() {
   const articlesDir = path.join(process.cwd(), "data", "articles");
   const files = fs.readdirSync(articlesDir);
 
-  // Filtra solo archivos .mdx y extrae datos
   const articles = files
     .filter((f) => f.endsWith(".mdx"))
     .map((filename) => {
       const filePath = path.join(articlesDir, filename);
       const mdxContent = fs.readFileSync(filePath, "utf-8");
       const { data } = matter(mdxContent);
-      // Aquí usa los campos correctos del frontmatter!
       return {
         slug: filename.replace(/\.mdx$/, ""),
         title: data.title || "",
@@ -39,7 +37,6 @@ export async function getStaticProps() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 10);
 
-  // El primero es el destacado (featured)
   const [featured, ...rest] = articles;
 
   return {
@@ -59,12 +56,13 @@ export default function Home({ featured, articles }) {
       <nav className="border-b border-gray-100 bg-white sticky top-0 z-40">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 flex overflow-x-auto gap-4 py-3">
           {categories.map((cat) => (
-            <button
+            <Link
               key={cat}
+              href={`/categories/${cat.toLowerCase()}`}
               className="px-4 py-1 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-black hover:text-white transition text-sm font-medium whitespace-nowrap"
             >
               {cat}
-            </button>
+            </Link>
           ))}
         </div>
       </nav>
@@ -90,9 +88,10 @@ export default function Home({ featured, articles }) {
         </section>
       )}
 
-      {/* Grid de artículos */}
-      <main className="max-w-5xl mx-auto px-4 mt-10 flex flex-col md:flex-row gap-12">
-        <section className="flex-1 min-w-0">
+      {/* MAIN: artículos y sidebar */}
+      <main className="max-w-5xl mx-auto px-4 mt-10 flex flex-col md:flex-row gap-12 min-h-[calc(100vh-180px)] pb-14">
+        {/* ARTÍCULOS: Scroll SOLO aquí si hay muchos */}
+        <section className="flex-1 min-w-0 pb-16">
           <h2 className="text-xl font-semibold mb-6 text-gray-800">Últimos artículos</h2>
           <div className="flex flex-col gap-8">
             {articles.map((art) => (
@@ -114,10 +113,10 @@ export default function Home({ featured, articles }) {
             ))}
           </div>
         </section>
-        {/* Sidebar PRO: Artículos destacados + autores destacados + tendencias + newsletter */}
-        <aside className="w-full md:w-64 flex-shrink-0 md:block hidden sticky top-28">
-          <div className="bg-gray-50 p-5 rounded-xl border border-gray-100 shadow-sm">
 
+        {/* SIDEBAR: Derecho, sticky, siempre separado del footer */}
+        <aside className="w-full md:w-64 flex-shrink-0 md:block hidden sticky top-28 self-start">
+          <div className="bg-gray-50 p-5 rounded-xl border border-gray-100 shadow-sm pb-12 min-h-[420px]">
             {/* Artículos destacados */}
             <h4 className="text-md font-semibold mb-4">Artículos destacados</h4>
             <ul className="space-y-5 mb-8">
@@ -149,7 +148,6 @@ export default function Home({ featured, articles }) {
                 )
               ))}
             </ul>
-
             {/* Autores destacados */}
             <h4 className="text-md font-semibold mb-4">Autores destacados</h4>
             <ul className="space-y-4 mb-8">
@@ -179,7 +177,6 @@ export default function Home({ featured, articles }) {
                 </li>
               ))}
             </ul>
-
             {/* Tendencias */}
             <div className="mt-8 mb-6">
               <h5 className="text-sm font-bold mb-2 text-gray-700">Tendencias</h5>
@@ -194,8 +191,7 @@ export default function Home({ featured, articles }) {
                 ))}
               </div>
             </div>
-
-            {/* Newsletter Widget */}
+            {/* Newsletter */}
             <div className="mb-1">
               <h5 className="text-sm font-bold mb-2 text-gray-700">¡Recibe lo mejor de Diariun!</h5>
               <form className="flex flex-col gap-2">
