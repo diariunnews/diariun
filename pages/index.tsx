@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Image from "next/image";
 import Link from "next/link";
 import { categories } from "../lib/categories";
+import StickySidebar from "../components/StickySidebar";
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -26,10 +27,10 @@ export async function getStaticProps() {
         avatar: data.authorAvatar || "/authors/default.jpg",
         date: data.date || "",
         category: data.category || "",
-        cover: data.cover || "/Foto_Portada_Diarium.jpg"
+        cover: data.cover || "/Foto_Portada_Diarium.jpg",
       };
     })
-    .filter(a => a.date)
+    .filter((a) => a.date)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 10);
 
@@ -44,14 +45,10 @@ export async function getStaticProps() {
 }
 
 export default function Home({ featured, articles }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (direction: "left" | "right") => {
+  const scrollRef = useRef(null);
+  const scroll = (offset) => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -200 : 200,
-        behavior: "smooth",
-      });
+      scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
     }
   };
 
@@ -59,39 +56,41 @@ export default function Home({ featured, articles }) {
     <>
       <Header />
 
-      {/* Categorías */}
-      <nav className="border-b border-gray-100 bg-white sticky top-0 z-40">
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
+      <nav className="border-b border-gray-100 bg-white sticky top-0 z-40 py-2">
+        <div className="relative max-w-6xl mx-auto flex items-center px-4 gap-2">
           <button
-            onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 shadow-sm rounded-full p-1 hover:bg-gray-100"
+            onClick={() => scroll(-200)}
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+            aria-label="Scroll left"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
           </button>
+
           <div
             ref={scrollRef}
-            className="flex overflow-x-auto no-scrollbar gap-4 py-3 px-6"
+            className="flex overflow-x-auto no-scrollbar gap-3 px-1 flex-1"
           >
             {categories.map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/categories/${cat.slug}`}
-                className="px-4 py-1 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-black hover:text-white transition text-sm font-medium whitespace-nowrap"
+                className="px-4 py-1 rounded-full border border-gray-200 transition text-sm font-medium whitespace-nowrap bg-gray-50 text-gray-700 hover:bg-black hover:text-white"
               >
                 {cat.name}
               </Link>
             ))}
           </div>
+
           <button
-            onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 shadow-sm rounded-full p-1 hover:bg-gray-100"
+            onClick={() => scroll(200)}
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+            aria-label="Scroll right"
           >
-            <ChevronRight size={18} />
+            <ChevronRight className="w-5 h-5 text-gray-600" />
           </button>
         </div>
       </nav>
 
-      {/* Artículo destacado */}
       {featured && (
         <section className="bg-gray-50 border-b border-gray-100">
           <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8 px-4 py-10 items-center">
@@ -106,103 +105,97 @@ export default function Home({ featured, articles }) {
               </div>
             </div>
             <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl shadow-lg">
-              <Image src={featured.cover} alt="Imagen destacada" layout="fill" objectFit="cover" />
+              <Image src={featured.cover} alt="Imagen destacada" fill className="object-cover" />
             </div>
           </div>
         </section>
       )}
 
-      {/* Main con artículos + sidebar */}
-      <main className="max-w-7xl mx-auto px-4 mt-12 flex gap-12 items-start relative">
-        {/* Artículos */}
+      <main className="flex items-start max-w-7xl mx-auto px-4 gap-8 mt-10">
         <section className="flex-1 flex flex-col gap-8">
           {articles.map((art) => (
-            <Link key={art.slug} href={`/articles/${art.slug}`} className="group flex items-center gap-6 border-b pb-6">
+            <Link
+              key={art.slug}
+              href={`/articles/${art.slug}`}
+              className="flex items-center gap-6 group bg-gray-50 p-6 rounded-xl shadow-sm hover:bg-gray-100 transition"
+            >
               <div className="flex-1">
-                <span className="text-xs uppercase text-gray-500 font-medium">{art.category}</span>
-                <h2 className="text-xl font-bold text-gray-900 group-hover:underline">{art.title}</h2>
-                <p className="text-gray-600 text-sm mt-1">{art.excerpt}</p>
-                <div className="flex items-center gap-2 mt-2">
+                <span className="block text-xs font-medium text-gray-400 uppercase mb-1">{art.category}</span>
+                <h2 className="text-2xl font-bold text-gray-900 group-hover:underline">{art.title}</h2>
+                <p className="text-gray-600 text-base mt-2 line-clamp-2">{art.excerpt}</p>
+                <div className="flex items-center gap-2 mt-4">
                   <Image src={art.avatar} alt={art.author} width={28} height={28} className="rounded-full" />
-                  <span className="text-sm text-gray-800">{art.author}</span>
+                  <span className="text-sm text-gray-800 font-medium">{art.author}</span>
                   <span className="text-sm text-gray-400">· {art.date}</span>
                 </div>
               </div>
-              <div className="w-32 h-24 relative rounded-md overflow-hidden flex-shrink-0">
-                <Image src={art.cover} alt={art.title} layout="fill" objectFit="cover" />
+              <div className="w-40 h-28 relative rounded-md overflow-hidden flex-shrink-0">
+                <Image src={art.cover} alt={art.title} fill className="object-cover" />
               </div>
             </Link>
           ))}
         </section>
 
-        {/* Separador vertical */}
-        <div
-          className="hidden md:block absolute top-0 bottom-0 w-px bg-gray-200"
-          style={{ left: "calc(100% - 20rem - 48px)" }}
-          aria-hidden="true"
-        />
-
-        {/* Sidebar */}
-        <aside className="w-80 hidden md:block">
-          <div className="sticky top-32 flex flex-col gap-10 pl-4">
-            <div>
-              <h4 className="text-md font-semibold mb-4 flex items-center gap-2"><span className="text-yellow-500">⭐</span> Staff Picks</h4>
-              <ul className="space-y-5 mb-8">
-                {[featured, ...articles.slice(0, 2)].map((art) => (
-                  art && (
+        <aside className="w-80 flex-shrink-0">
+          <StickySidebar top={112}>
+            <div className="flex flex-col gap-10 pl-2">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">⭐ Staff Picks</h3>
+                <ul className="flex flex-col gap-6">
+                  {[featured, ...articles.slice(0, 2)].map((art) => (
                     <li key={art.slug}>
-                      <Link href={`/articles/${art.slug}`} className="flex gap-3 items-center group">
-                        <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                          <Image src={art.cover} alt={art.title} layout="fill" objectFit="cover" />
-                        </div>
-                        <div className="flex-1">
-                          <span className="block text-xs text-gray-500">{art.category}</span>
-                          <span className="font-semibold text-gray-800 group-hover:underline leading-tight text-sm line-clamp-2">
-                            {art.title}
-                          </span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Image src={art.avatar} alt={art.author} width={24} height={24} className="rounded-full border border-white shadow" />
-                            <span className="text-xs text-gray-700">{art.author}</span>
-                          </div>
+                      <Link href={`/articles/${art.slug}`} className="group">
+                        <span className="text-sm text-gray-500">Recomendado</span>
+                        <h4 className="text-md font-bold text-gray-800 group-hover:underline">{art.title}</h4>
+                        <p className="text-sm text-gray-600">{art.excerpt}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Image src={art.avatar} alt={art.author} width={24} height={24} className="rounded-full" />
+                          <span className="text-sm text-gray-700">{art.author}</span>
+                          <span className="text-sm text-gray-400">· {art.date}</span>
                         </div>
                       </Link>
                     </li>
-                  )
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h5 className="text-sm font-bold mb-2 text-gray-700">Tendencias</h5>
-              <div className="flex flex-wrap gap-2">
-                {categories.slice(0, 8).map((cat) => (
-                  <span
-                    key={cat.slug}
-                    className="px-2 py-1 text-xs bg-gray-200 rounded-full text-gray-600"
-                  >
-                    {cat.name}
-                  </span>
-                ))}
+                  ))}
+                </ul>
               </div>
-            </div>
 
-            <div>
-              <h5 className="text-sm font-bold mb-2 text-gray-700">¡Recibe lo mejor de Diariun!</h5>
-              <form className="flex flex-col gap-2">
-                <input type="email" className="rounded-lg px-3 py-2 border border-gray-200" placeholder="Tu email..." />
-                <button className="rounded-lg bg-black text-white px-3 py-2 font-semibold text-sm hover:bg-gray-800 transition">Suscribirme</button>
-              </form>
-            </div>
+              <div>
+                <h4 className="text-md font-semibold mb-2">Tendencias</h4>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <span key={cat.slug} className="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-700">
+                      {cat.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-            <footer className="border-t border-gray-200 pt-4 text-sm text-gray-500 mt-4">
-              <ul className="flex flex-col gap-1 mb-2">
-                <li><Link href="/privacidad">Política de privacidad</Link></li>
-                <li><Link href="/terminos">Términos y condiciones</Link></li>
-                <li><Link href="/contacto">Contacto</Link></li>
-              </ul>
-              <p className="mt-2 text-xs">&copy; 2025 Diariun</p>
-            </footer>
-          </div>
+              <div>
+                <h4 className="text-md font-semibold mb-2">¡Recibe lo mejor de Diariun!</h4>
+                <form className="flex flex-col gap-2">
+                  <input
+                    type="email"
+                    placeholder="Tu email..."
+                    className="px-3 py-2 rounded-md border border-gray-300"
+                  />
+                  <button className="bg-black text-white px-3 py-2 rounded-md hover:bg-gray-800 text-sm font-semibold">
+                    Suscribirme
+                  </button>
+                </form>
+              </div>
+
+              <footer className="border-t border-gray-200 pt-4 text-sm text-gray-500 mt-4">
+                <ul className="flex flex-col gap-1">
+                  <li><Link href="/sobre-nosotros">Sobre nosotros</Link></li>
+                  <li><Link href="/privacidad">Privacidad</Link></li>
+                  <li><Link href="/terminos">Términos</Link></li>
+                  <li><Link href="/contacto">Contacto</Link></li>
+                  <li><Link href="/cookies">Cookies</Link></li>
+                </ul>
+                <p className="mt-4 text-xs">&copy; 2025 Diariun. Todos los derechos reservados.</p>
+              </footer>
+            </div>
+          </StickySidebar>
         </aside>
       </main>
     </>
