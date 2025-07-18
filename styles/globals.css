@@ -10,3 +10,11 @@ a:hover {
 }
 
 /* Puedes poner aquí más estilos globales */
+/* Oculta scrollbars sin impedir scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

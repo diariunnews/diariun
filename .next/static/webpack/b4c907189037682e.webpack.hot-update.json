@@ -1,0 +1,1 @@
+{"c":["pages/_app","pages/index","webpack"],"r":["pages/categories/[category]"],"m":["./components/StickySidebar.tsx","./node_modules/next/dist/build/webpack/loaders/next-client-pages-loader.js?absolutePagePath=C%3A%5CProyectos%5Cdiariun%5Cpages%5Ccategories%5C%5Bcategory%5D.tsx&page=%2Fcategories%2F%5Bcategory%5D!","./pages/categories/[category].tsx"]}

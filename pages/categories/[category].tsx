@@ -1,45 +1,28 @@
-// pages/categories/[category].tsx
+// category page
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import Head from "next/head";
 import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import StickySidebar from "../../components/StickySidebar";
+import { categories } from "../../lib/categories";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRef } from "react";
 
-const PAGE_SIZE = 10;
-
-// Slugify: categoría -> URL
-function slugify(str) {
+function slugify(str: string) {
   return str
-    .toString()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/\s+/g, "-");
 }
 
 export async function getStaticPaths() {
-  const articlesDir = path.join(process.cwd(), "data", "articles");
-  const files = fs.readdirSync(articlesDir);
-
-  const categories = new Set(
-    files
-      .filter(f => f.endsWith(".mdx"))
-      .map(filename => {
-        const filePath = path.join(articlesDir, filename);
-        const mdxContent = fs.readFileSync(filePath, "utf-8");
-        const { data } = matter(mdxContent);
-        return data.category ? slugify(data.category) : null;
-      })
-      .filter(Boolean)
-  );
-
-  const paths = Array.from(categories).map(cat => ({
-    params: { category: cat }
+  const paths = categories.map((cat) => ({
+    params: { category: cat.slug },
   }));
-
   return { paths, fallback: false };
 }
 
@@ -48,10 +31,9 @@ export async function getStaticProps({ params }) {
   const articlesDir = path.join(process.cwd(), "data", "articles");
   const files = fs.readdirSync(articlesDir);
 
-  // Saca todos los artículos de la categoría actual
   const allArticles = files
-    .filter(f => f.endsWith(".mdx"))
-    .map(filename => {
+    .filter((f) => f.endsWith(".mdx"))
+    .map((filename) => {
       const filePath = path.join(articlesDir, filename);
       const mdxContent = fs.readFileSync(filePath, "utf-8");
       const { data } = matter(mdxContent);
@@ -59,161 +41,181 @@ export async function getStaticProps({ params }) {
         slug: filename.replace(/\.mdx$/, ""),
         title: data.title || "",
         excerpt: data.excerpt || "",
-        author: data.authorName || "",
+        author: data.authorName || "Autor desconocido",
         avatar: data.authorAvatar || "/authors/default.jpg",
-        date: data.date || "",
-        category: data.category || "",
-        cover: data.cover || "/Foto_Portada_Diarium.jpg"
+        date: data.date || "Sin fecha",
+        category: data.category || "General",
+        cover: data.cover || "/Foto_Portada_Diarium.jpg",
       };
     })
-    .filter(a => slugify(a.category) === category)
+    .filter((a) => slugify(a.category) === category)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  // Saca todas las categorías reales para el sidebar
-  const allCategoriesSet = new Set(
-    files
-      .filter(f => f.endsWith(".mdx"))
-      .map(filename => {
-        const filePath = path.join(articlesDir, filename);
-        const mdxContent = fs.readFileSync(filePath, "utf-8");
-        const { data } = matter(mdxContent);
-        return data.category || "";
-      })
-      .filter(Boolean)
-  );
-  const allCategories = Array.from(allCategoriesSet);
-
-  // Solo los primeros PAGE_SIZE, el resto lo cargará el cliente
-  const initialArticles = allArticles.slice(0, PAGE_SIZE);
+  const destacados = allArticles.slice(0, 3);
 
   return {
     props: {
-      initialArticles,
       allArticles,
       category,
-      allCategories,
-    }
+      destacados,
+    },
   };
 }
 
-export default function CategoryPage({ initialArticles, allArticles, category, allCategories }) {
-  const prettyCategory = category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, " ");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+export default function CategoryPage({ allArticles, category, destacados }) {
+  const prettyCategory =
+    categories.find((c) => c.slug === category)?.name ||
+    category.charAt(0).toUpperCase() + category.slice(1);
 
-  // ¿Hay más artículos?
-  const hasMore = visibleCount < allArticles.length;
-
-  // Artículos a mostrar (10, 20, 30...)
-  const articles = allArticles.slice(0, visibleCount);
+  const scrollRef = useRef(null);
+  const scroll = (offset: number) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
 
   return (
     <>
       <Head>
-        <title>Artículos de {prettyCategory} | Diariun</title>
-        <meta name="description" content={`Explora los mejores artículos de ${prettyCategory} en Diariun.`} />
+        <title>Diariun | {prettyCategory}</title>
       </Head>
+
       <Header />
-      <main className="max-w-5xl mx-auto px-4 mt-10 flex flex-col md:flex-row gap-12 min-h-[calc(100vh-180px)] pb-14">
-        {/* ARTÍCULOS */}
-        <section className="flex-1 min-w-0 pb-16">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-8">
-            Artículos de <span className="capitalize">{prettyCategory}</span>
-          </h1>
-          <div className="flex flex-col gap-8">
-            {articles.length === 0 && (
-              <p className="text-gray-500">No hay artículos en esta categoría.</p>
-            )}
-            {articles.map(art => (
-              <Link key={art.slug} href={`/articles/${art.slug}`} className="group flex gap-6 items-center hover:bg-gray-50 p-4 rounded-xl transition">
-                <div className="relative w-36 h-24 flex-shrink-0 rounded-lg overflow-hidden">
-                  <Image src={art.cover} alt={art.title} layout="fill" objectFit="cover" />
-                </div>
-                <div className="flex-1">
-                  <span className="text-xs text-gray-500 font-medium">{art.category}</span>
-                  <h3 className="text-lg font-bold text-gray-900 group-hover:underline mb-1 line-clamp-2">{art.title}</h3>
-                  <p className="text-gray-600 mb-2 text-sm line-clamp-2">{art.excerpt}</p>
-                  <div className="flex items-center gap-2">
-                    <Image src={art.avatar} alt={art.author} width={32} height={32} className="rounded-full" />
-                    <span className="text-xs text-gray-700">{art.author}</span>
-                    <span className="text-xs text-gray-400">· {art.date}</span>
-                  </div>
-                </div>
+
+      {/* Categorías con flechas y sin scroll visible */}
+      <nav className="border-b border-gray-100 bg-white sticky top-0 z-40 py-2">
+        <div className="relative max-w-6xl mx-auto flex items-center px-4 gap-2">
+          <button
+            onClick={() => scroll(-200)}
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          </button>
+
+          <div
+            ref={scrollRef}
+            className="flex overflow-x-auto no-scrollbar gap-3 px-1 flex-1"
+          >
+            {categories.map((cat) => (
+              <Link
+                key={cat.slug}
+                href={`/categories/${cat.slug}`}
+                className={`px-4 py-1 rounded-full border border-gray-200 transition text-sm font-medium whitespace-nowrap
+                  ${cat.slug === category ? "bg-black text-white border-black" : "bg-gray-50 text-gray-700 hover:bg-black hover:text-white"}`}
+              >
+                {cat.name}
               </Link>
             ))}
           </div>
-          {/* Botón Ver más */}
-          {hasMore && (
-            <div className="flex justify-center mt-10">
-              <button
-                onClick={() => setVisibleCount(visibleCount + PAGE_SIZE)}
-                className="rounded-lg bg-black text-white px-5 py-2 font-semibold text-base hover:bg-gray-800 transition"
-              >
-                Ver más
-              </button>
-            </div>
-          )}
+
+          <button
+            onClick={() => scroll(200)}
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+      </nav>
+
+      <main className="flex items-start max-w-7xl mx-auto px-4 gap-8 mt-10">
+        {/* Artículos */}
+        <section className="flex-1 flex flex-col gap-8">
+          {allArticles.map((art) => (
+            <Link
+              key={art.slug}
+              href={`/articles/${art.slug}`}
+              className="flex items-center gap-6 group bg-gray-50 p-6 rounded-xl shadow-sm hover:bg-gray-100 transition"
+            >
+              <div className="flex-1">
+                <span className="block text-xs font-medium text-gray-400 uppercase mb-1">{art.category}</span>
+                <h2 className="text-2xl font-bold text-gray-900 group-hover:underline">
+                  {art.title}
+                </h2>
+                <p className="text-gray-600 text-base mt-2 line-clamp-2">{art.excerpt}</p>
+                <div className="flex items-center gap-2 mt-4">
+                  <Image src={art.avatar} alt={art.author} width={28} height={28} className="rounded-full" />
+                  <span className="text-sm text-gray-800 font-medium">{art.author}</span>
+                  <span className="text-sm text-gray-400">· {art.date}</span>
+                </div>
+              </div>
+              <div className="w-40 h-28 relative rounded-md overflow-hidden flex-shrink-0">
+                <Image src={art.cover} alt={art.title} fill className="object-cover" />
+              </div>
+            </Link>
+          ))}
         </section>
-        {/* SIDEBAR DERECHO */}
-        <aside className="w-full md:w-64 flex-shrink-0 md:block hidden sticky top-28 self-start">
-          <div className="bg-gray-50 p-5 rounded-xl border border-gray-100 shadow-sm pb-12 min-h-[420px]">
-            {/* Todas las categorías */}
-            <h4 className="text-md font-semibold mb-4">Categorías</h4>
-            <div className="flex flex-wrap gap-2 mb-8">
-              {allCategories.map(cat => (
-                <Link
-                  key={cat}
-                  href={`/categories/${slugify(cat)}`}
-                  className={`px-3 py-1 rounded-full border text-xs font-medium whitespace-nowrap transition ${
-                    slugify(cat) === category
-                      ? "bg-black text-white border-black"
-                      : "border-gray-200 bg-white text-gray-600 hover:bg-black hover:text-white"
-                  }`}
-                >
-                  {cat}
-                </Link>
-              ))}
+
+        {/* Sidebar estilo Medium */}
+        <aside className="w-80 flex-shrink-0">
+          <StickySidebar top={112}>
+            <div className="flex flex-col gap-10 pl-2">
+              {/* Staff Picks */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">⭐ Staff Picks</h3>
+                <ul className="flex flex-col gap-6">
+                  {destacados.map((art) => (
+                    <li key={art.slug}>
+                      <Link href={`/articles/${art.slug}`} className="group">
+                        <span className="text-sm text-gray-500">Recomendado</span>
+                        <h4 className="text-md font-bold text-gray-800 group-hover:underline">
+                          {art.title}
+                        </h4>
+                        <p className="text-sm text-gray-600">{art.excerpt}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Image src={art.avatar} alt={art.author} width={24} height={24} className="rounded-full" />
+                          <span className="text-sm text-gray-700">{art.author}</span>
+                          <span className="text-sm text-gray-400">· {art.date}</span>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Tendencias */}
+              <div>
+                <h4 className="text-md font-semibold mb-2">Tendencias</h4>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <span key={cat.slug} className="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-700">
+                      {cat.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Newsletter */}
+              <div>
+                <h4 className="text-md font-semibold mb-2">¡Recibe lo mejor de Diariun!</h4>
+                <form className="flex flex-col gap-2">
+                  <input
+                    type="email"
+                    placeholder="Tu email..."
+                    className="px-3 py-2 rounded-md border border-gray-300"
+                  />
+                  <button className="bg-black text-white px-3 py-2 rounded-md hover:bg-gray-800 text-sm font-semibold">
+                    Suscribirme
+                  </button>
+                </form>
+              </div>
+
+              {/* Footer del sidebar */}
+              <footer className="border-t border-gray-200 pt-4 text-sm text-gray-500 mt-4">
+                <ul className="flex flex-col gap-1">
+                  <li><Link href="/sobre-nosotros">Sobre nosotros</Link></li>
+                  <li><Link href="/privacidad">Privacidad</Link></li>
+                  <li><Link href="/terminos">Términos</Link></li>
+                  <li><Link href="/contacto">Contacto</Link></li>
+                  <li><Link href="/cookies">Cookies</Link></li>
+                </ul>
+                <p className="mt-4 text-xs">&copy; 2025 Diariun. Todos los derechos reservados.</p>
+              </footer>
             </div>
-            {/* Autores destacados */}
-            <h4 className="text-md font-semibold mb-4">Autores destacados</h4>
-            <ul className="space-y-4 mb-8">
-              {[
-                {
-                  name: "Ana Torres",
-                  avatar: "/authors/female-114.jpg",
-                  bio: "Tecnología y sociedad"
-                },
-                {
-                  name: "Daniel Reyes",
-                  avatar: "/authors/male-001.jpg",
-                  bio: "Negocios y empresas"
-                },
-                {
-                  name: "Emily Zhang",
-                  avatar: "/authors/female-116.jpg",
-                  bio: "Cultura y comunicación"
-                },
-              ].map((a) => (
-                <li key={a.name} className="flex items-center gap-3">
-                  <Image src={a.avatar} alt={a.name} width={36} height={36} className="rounded-full" />
-                  <div>
-                    <span className="font-medium text-gray-800">{a.name}</span>
-                    <p className="text-xs text-gray-500">{a.bio}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            {/* Newsletter */}
-            <div className="mb-1">
-              <h5 className="text-sm font-bold mb-2 text-gray-700">¡Recibe lo mejor de Diariun!</h5>
-              <form className="flex flex-col gap-2">
-                <input type="email" className="rounded-lg px-3 py-2 border border-gray-200" placeholder="Tu email..." />
-                <button className="rounded-lg bg-black text-white px-3 py-2 font-semibold text-sm hover:bg-gray-800 transition">Suscribirme</button>
-              </form>
-            </div>
-          </div>
+          </StickySidebar>
         </aside>
       </main>
-      <Footer />
     </>
   );
 }
