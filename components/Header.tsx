@@ -35,30 +35,45 @@ export default function Header() {
             priority
           />
         </Link>
+
         <nav
           style={{
             display: "flex",
-            gap: "1.5rem",
+            gap: "1rem",
             fontSize: "1rem",
             alignItems: "center",
           }}
         >
-          <Link href="/authors" style={{ color: "#444" }}>
-            Explorar Autores
+          <Link
+            href="/write"
+            style={{
+              color: "#222",
+              fontWeight: 600,
+              padding: "0.3rem 0.8rem",
+              borderRadius: "5px",
+              border: "1px solid #eee",
+              background: "#f9f9f9",
+              transition: "background 0.2s",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.background = "#efefef")}
+            onMouseOut={(e) => (e.currentTarget.style.background = "#f9f9f9")}
+          >
+            Escribir
           </Link>
+
           <Link
             href="/login"
             style={{
               color: "#222",
               fontWeight: 600,
-              border: "1px solid #eee",
+              padding: "0.3rem 0.8rem",
               borderRadius: "5px",
-              padding: "0.3rem 1rem",
+              border: "1px solid #eee",
               background: "#f9f9f9",
               transition: "background 0.2s",
             }}
-            onMouseOver={e => (e.currentTarget.style.background = "#efefef")}
-            onMouseOut={e => (e.currentTarget.style.background = "#f9f9f9")}
+            onMouseOver={(e) => (e.currentTarget.style.background = "#efefef")}
+            onMouseOut={(e) => (e.currentTarget.style.background = "#f9f9f9")}
           >
             Login
           </Link>
