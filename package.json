@@ -9,8 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
     "@mdx-js/loader": "^3.1.0",
     "@next/mdx": "^15.3.5",
+    "@supabase/auth-ui-react": "^0.4.7",
+    "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.52.0",
     "fs": "^0.0.1-security",
     "gray-matter": "^4.0.3",

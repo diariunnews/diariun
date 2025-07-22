@@ -1,7 +1,11 @@
+// components/Header.tsx
 import Image from "next/image";
 import Link from "next/link";
+import { useModal } from "../context/ModalContext";
 
 export default function Header() {
+  const { openModal } = useModal();
+
   return (
     <header
       style={{
@@ -39,44 +43,18 @@ export default function Header() {
         <nav
           style={{
             display: "flex",
-            gap: "1rem",
+            gap: "1.5rem",
             fontSize: "1rem",
             alignItems: "center",
           }}
         >
-          <Link
-            href="/write"
-            style={{
-              color: "#222",
-              fontWeight: 600,
-              padding: "0.3rem 0.8rem",
-              borderRadius: "5px",
-              border: "1px solid #eee",
-              background: "#f9f9f9",
-              transition: "background 0.2s",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "#efefef")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "#f9f9f9")}
-          >
-            Escribir
-          </Link>
+          <button
+  onClick={() => openModal("login")}
+  className="px-4 py-2 rounded-full bg-white border border-gray-300 shadow-sm text-sm font-semibold text-gray-800 hover:bg-gray-100 transition-all duration-200"
+>
+  Iniciar sesión
+</button>
 
-          <Link
-            href="/login"
-            style={{
-              color: "#222",
-              fontWeight: 600,
-              padding: "0.3rem 0.8rem",
-              borderRadius: "5px",
-              border: "1px solid #eee",
-              background: "#f9f9f9",
-              transition: "background 0.2s",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "#efefef")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "#f9f9f9")}
-          >
-            Login
-          </Link>
         </nav>
       </div>
     </header>

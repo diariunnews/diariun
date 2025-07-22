@@ -1,107 +1,152 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../context/AuthContext";
-import { useRouter } from "next/router";
-import { useAuth } from "../context/AuthContext";
-import { FcGoogle } from "react-icons/fc";
-import { Mail } from "lucide-react";
+// pages/login.tsx
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { useState } from 'react';
+import { supabase } from '../context/AuthContext';
+
+const translations = {
+  es: {
+    sign_in: {
+      email_label: 'Correo electrónico',
+      password_label: 'Contraseña',
+      email_input_placeholder: 'Tu correo',
+      password_input_placeholder: 'Tu contraseña',
+      button_label: 'Iniciar sesión',
+      loading_button_label: 'Entrando...',
+      social_provider_text: 'Inicia sesión con',
+      link_text: '¿No tienes cuenta? Regístrate',
+    },
+    sign_up: {
+      email_label: 'Correo electrónico',
+      password_label: 'Contraseña',
+      email_input_placeholder: 'Tu correo',
+      password_input_placeholder: 'Elige una contraseña segura',
+      button_label: 'Crear cuenta',
+      loading_button_label: 'Creando...',
+      social_provider_text: 'Regístrate con',
+      link_text: '¿Ya tienes cuenta? Inicia sesión',
+      confirmation_text: 'Revisa tu correo para confirmar tu cuenta',
+    },
+    forgotten_password: {
+      email_label: 'Tu correo electrónico',
+      email_input_placeholder: 'Introduce tu correo',
+      button_label: 'Recuperar contraseña',
+      link_text: 'Volver a iniciar sesión',
+      confirmation_text: 'Revisa tu correo para restaurar tu contraseña',
+    },
+    magic_link: {
+      email_input_label: 'Tu correo electrónico',
+      email_input_placeholder: 'Introduce tu correo',
+      button_label: 'Enviar enlace mágico',
+      link_text: 'Inicia sesión con contraseña',
+      confirmation_text: 'Revisa tu correo para continuar',
+    },
+  },
+  en: {
+    sign_in: {
+      email_label: 'Email',
+      password_label: 'Password',
+      email_input_placeholder: 'Your email',
+      password_input_placeholder: 'Your password',
+      button_label: 'Sign in',
+      loading_button_label: 'Signing in...',
+      social_provider_text: 'Sign in with',
+      link_text: "Don't have an account? Sign up",
+    },
+    sign_up: {
+      email_label: 'Email',
+      password_label: 'Password',
+      email_input_placeholder: 'Your email',
+      password_input_placeholder: 'Choose a secure password',
+      button_label: 'Sign up',
+      loading_button_label: 'Creating...',
+      social_provider_text: 'Sign up with',
+      link_text: 'Already have an account? Sign in',
+      confirmation_text: 'Check your email to confirm your account',
+    },
+    forgotten_password: {
+      email_label: 'Your email',
+      email_input_placeholder: 'Enter your email',
+      button_label: 'Recover password',
+      link_text: 'Back to sign in',
+      confirmation_text: 'Check your email to reset your password',
+    },
+    magic_link: {
+      email_input_label: 'Your email',
+      email_input_placeholder: 'Enter your email',
+      button_label: 'Send magic link',
+      link_text: 'Sign in with password',
+      confirmation_text: 'Check your email to continue',
+    },
+  },
+};
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [view, setView] = useState<"sign-in" | "sign-up">("sign-in");
-  const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (user) router.push("/");
-  }, [user, router]);
-
-  const handleEmailLogin = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    setLoading(false);
-    if (error) alert(error.message);
-    else alert("Revisa tu correo para continuar.");
-  };
-
-  const handleOAuth = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
-    if (error) alert(error.message);
-  };
+  const [view, setView] = useState<'sign_in' | 'sign_up'>('sign_in');
+  const [lang, setLang] = useState<'es' | 'en'>('es');
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full space-y-6">
-        <h2 className="text-center text-3xl font-serif font-semibold">
-          {view === "sign-in" ? "Welcome back." : "Join Diariun."}
-        </h2>
-
-        <div className="space-y-4">
-          <button
-            onClick={handleOAuth}
-            className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-full py-2 hover:bg-gray-50"
+        {/* Language Selector */}
+        <div className="flex justify-end">
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value as 'es' | 'en')}
+            className="border border-gray-300 rounded px-2 py-1 text-sm"
           >
-            <FcGoogle className="text-xl" />
-            {view === "sign-in" ? "Sign in with Google" : "Sign up with Google"}
-          </button>
-
-          <div className="relative text-center text-gray-500 text-sm">
-            <span className="bg-white px-2 relative z-10">or</span>
-            <div className="absolute inset-0 border-t border-gray-200 top-3"></div>
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleEmailLogin();
-            }}
-            className="space-y-4"
-          >
-            <div>
-              <input
-                type="email"
-                placeholder="Your email"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-black text-white py-2 rounded-md hover:bg-gray-800 transition"
-            >
-              <Mail size={18} />
-              {loading
-                ? "Sending magic link..."
-                : view === "sign-in"
-                ? "Sign in with email"
-                : "Sign up with email"}
-            </button>
-          </form>
+            <option value="es">Español</option>
+            <option value="en">English</option>
+          </select>
         </div>
 
+        {/* Title */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900">
+            {view === 'sign_in'
+              ? lang === 'es'
+                ? 'Bienvenido de nuevo'
+                : 'Welcome back'
+              : lang === 'es'
+              ? 'Únete a Diariun'
+              : 'Join Diariun'}
+          </h1>
+        </div>
+
+        {/* Auth UI */}
+        <Auth
+          supabaseClient={supabase}
+          view={view}
+          appearance={{
+            theme: ThemeSupa,
+            style: {
+              button: { borderRadius: '6px', padding: '10px 16px', fontWeight: 600 },
+              input: { borderRadius: '6px' },
+              label: { fontWeight: 600 },
+            },
+          }}
+          localization={{ variables: translations[lang] }}
+          providers={['google', 'facebook']}
+          redirectTo="/"
+          showLinks={false}
+        />
+
+        {/* Toggle sign in/sign up */}
         <div className="text-center text-sm text-gray-600">
-          {view === "sign-in" ? (
-            <>
-              No account?{" "}
-              <button
-                onClick={() => setView("sign-up")}
-                className="underline hover:text-black"
-              >
-                Create one
+          {view === 'sign_in' ? (
+            <span>
+              {lang === 'es' ? '¿No tienes cuenta?' : "Don't have an account?"}{' '}
+              <button className="text-blue-600 hover:underline" onClick={() => setView('sign_up')}>
+                {lang === 'es' ? 'Regístrate' : 'Sign up'}
               </button>
-            </>
+            </span>
           ) : (
-            <>
-              Already have an account?{" "}
-              <button
-                onClick={() => setView("sign-in")}
-                className="underline hover:text-black"
-              >
-                Sign in
+            <span>
+              {lang === 'es' ? '¿Ya tienes cuenta?' : 'Already have an account?'}{' '}
+              <button className="text-blue-600 hover:underline" onClick={() => setView('sign_in')}>
+                {lang === 'es' ? 'Inicia sesión' : 'Sign in'}
               </button>
-            </>
+            </span>
           )}
         </div>
       </div>
