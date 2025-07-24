@@ -15,7 +15,7 @@ export default function Footer() {
       <Link href="#" className="no-underline text-[#444] hover:text-[#444]">
         Términos
       </Link>
-      <Link href="#" className="no-underline text-[#444] hover:text-[#444]">
+      <Link href="/privacidad" className="no-underline text-[#444] hover:text-[#444]">
         Privacidad
       </Link>
       <Link href="#" className="no-underline text-[#444] hover:text-[#444]">
@@ -24,8 +24,8 @@ export default function Footer() {
       <Link href="#" className="no-underline text-[#444] hover:text-[#444]">
         Política de Cookies
       </Link>
-      <Link href="#" className="no-underline text-[#444] hover:text-[#444]">
-        Trabaja con nosotros
+      <Link href="/data-deletion" className="no-underline text-[#444] hover:text-[#444]">
+        Eliminacion de datos
       </Link>
       <span className="w-full text-center mt-4 text-[#aaa]">
         © {new Date().getFullYear()} Diariun. Todos los derechos reservados.
