@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 
 export default function LoginModal() {
   const { isOpen, modalType, closeModal } = useModal();
-  const [view, setView] = useState<'sign_in' | 'sign_up'>('sign_in');
+  const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgot_password'>('sign_in');
   const { supabase } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -58,6 +58,25 @@ export default function LoginModal() {
     setLoading(false);
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setMessage('Revisa tu correo para restablecer tu contraseña.');
+    }
+
+    setLoading(false);
+  };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={closeModal}>
@@ -86,29 +105,44 @@ export default function LoginModal() {
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title as="h3" className="text-2xl font-bold mb-4 text-center">
-                  {view === 'sign_in' ? 'Bienvenido de nuevo' : 'Crea tu cuenta en Diariun'}
+                  {view === 'sign_in'
+                    ? 'Bienvenido de nuevo'
+                    : view === 'sign_up'
+                    ? 'Crea tu cuenta en Diariun'
+                    : 'Recuperar contraseña'}
                 </Dialog.Title>
 
-                {view === 'sign_in' ? (
-                  <Auth
-                    supabaseClient={supabase}
-                    appearance={{
-                      theme: ThemeSupa,
-                      style: {
-                        button: { borderRadius: '6px', padding: '10px', fontWeight: 600 },
-                        input: { borderRadius: '6px' },
-                        label: { fontWeight: '500' },
-                      },
-                    }}
-                    providers={['google', 'facebook']}
-                    view="sign_in"
-                    showLinks={false}
-                    theme="light"
-                    redirectTo="/"
-                  />
-                ) : (
+                {view === 'sign_in' && (
                   <>
-                    {/* Botones sociales arriba en Sign Up */}
+                    <Auth
+                      supabaseClient={supabase}
+                      appearance={{
+                        theme: ThemeSupa,
+                        style: {
+                          button: { borderRadius: '6px', padding: '10px', fontWeight: 600 },
+                          input: { borderRadius: '6px' },
+                          label: { fontWeight: '500' },
+                        },
+                      }}
+                      providers={['google', 'facebook']}
+                      view="sign_in"
+                      showLinks={false}
+                      theme="light"
+                      redirectTo="/"
+                    />
+                    <div className="mt-3 text-center text-sm">
+                      <button
+                        onClick={() => setView('forgot_password')}
+                        className="text-blue-600 hover:underline font-medium"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {view === 'sign_up' && (
+                  <>
                     <Auth
                       supabaseClient={supabase}
                       appearance={{
@@ -166,8 +200,41 @@ export default function LoginModal() {
                   </>
                 )}
 
+                {view === 'forgot_password' && (
+                  <>
+                    <form onSubmit={handleResetPassword} className="space-y-4">
+                      <input
+                        type="email"
+                        placeholder="Tu correo electrónico"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="w-full p-2 border border-gray-300 rounded"
+                      />
+                      {error && <p className="text-red-600 text-sm">{error}</p>}
+                      {message && <p className="text-green-600 text-sm">{message}</p>}
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-black text-white p-2 rounded font-semibold"
+                      >
+                        {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+                      </button>
+                    </form>
+
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => setView('sign_in')}
+                        className="text-sm text-blue-600 hover:underline font-medium"
+                      >
+                        ← Volver al inicio de sesión
+                      </button>
+                    </div>
+                  </>
+                )}
+
                 <div className="mt-4 text-center">
-                  {view === 'sign_in' ? (
+                  {view === 'sign_in' && (
                     <p className="text-sm">
                       ¿No tienes cuenta?{' '}
                       <button
@@ -177,7 +244,8 @@ export default function LoginModal() {
                         Regístrate
                       </button>
                     </p>
-                  ) : (
+                  )}
+                  {view === 'sign_up' && (
                     <p className="text-sm">
                       ¿Ya tienes cuenta?{' '}
                       <button
