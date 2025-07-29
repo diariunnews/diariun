@@ -14,5 +14,11 @@
   "..\\node_modules\\@supabase\\storage-js\\dist\\module\\lib\\helpers.js -> @supabase/node-fetch": {
     "id": "..\\node_modules\\@supabase\\storage-js\\dist\\module\\lib\\helpers.js -> @supabase/node-fetch",
     "files": []
+  },
+  "_app.tsx -> react-quill/dist/quill.snow.css": {
+    "id": "_app.tsx -> react-quill/dist/quill.snow.css",
+    "files": [
+      "static/chunks/node_modules_react-quill_dist_quill_snow_css.js"
+    ]
   }
 }

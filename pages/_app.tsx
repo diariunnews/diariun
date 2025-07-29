@@ -4,23 +4,25 @@ import { AuthProvider } from "../context/AuthContext";
 import { ModalProvider } from "../context/ModalContext";
 import LoginModal from "../components/LoginModal";
 import { Toaster } from "react-hot-toast";
+import { useEffect } from "react";
 
-function InnerApp({ Component, pageProps }) {
-  return (
-    <>
-      <Component {...pageProps} />
-      <LoginModal />
-      <Toaster position="top-center" />
-    </>
-  );
-}
+function App({ Component, pageProps }) {
+  useEffect(() => {
+    // Importa el CSS de React Quill sólo en el cliente
+    import('react-quill/dist/quill.snow.css');
+  }, []);
 
-export default function App({ Component, pageProps }) {
   return (
     <AuthProvider>
       <ModalProvider>
-        <InnerApp Component={Component} pageProps={pageProps} />
+        <>
+          <Component {...pageProps} />
+          <LoginModal />
+          <Toaster position="top-center" />
+        </>
       </ModalProvider>
     </AuthProvider>
   );
 }
+
+export default App;

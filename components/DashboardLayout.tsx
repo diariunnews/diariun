@@ -1,10 +1,15 @@
-import { ReactNode, Fragment } from 'react';
+// components/DashboardLayout.tsx
+import React from 'react';
+import { ReactNode, Fragment, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { Home, FileText, Search, Image as ImageIcon, Settings, UserCircle, LogOut, User, ArrowLeft, Tag } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
 import { useAuth } from '../context/AuthContext';
+import { getCreditosUsuario } from '../utils/creditos';
+import { Coins, PlusCircle } from 'lucide-react';
+
 
 const sidebarLinks = [
   { href: '/dashboard', label: 'Inicio', icon: Home },
@@ -18,32 +23,55 @@ const sidebarLinks = [
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { user, supabase } = useAuth();
+  const [creditos, setCreditos] = useState<number | null>(null);
+
+  // Función para refrescar saldo de créditos
+  const refreshCreditos = async () => {
+    if (user) {
+      const saldo = await getCreditosUsuario(user.id);
+      setCreditos(saldo);
+    }
+  };
+
+  useEffect(() => {
+    refreshCreditos();
+    // eslint-disable-next-line
+  }, [user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = '/';
   };
 
+  // Permitir que el hijo reciba la función para refrescar créditos
+  const childrenWithCreditos =
+  user && children && React.isValidElement(children)
+    ? React.cloneElement(children as React.ReactElement<any>, { onCreditosChange: refreshCreditos })
+    : children;
+
+
   return (
     <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
         <div className="h-16 flex items-center justify-center border-b">
-  <Link href="/" className="flex items-center">
-    <Image
-      src="/Logo_Diariun.png"
-      alt="Diariun"
-      width={90}
-      height={40}
-      style={{ maxHeight: "40px", width: "auto", objectFit: "contain" }}
-      priority
-    />
-  </Link>
-</div>
-
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/Logo_Diariun.png"
+              alt="Diariun"
+              width={90}
+              height={40}
+              style={{ maxHeight: "40px", width: "auto", objectFit: "contain" }}
+              priority
+            />
+          </Link>
+        </div>
         <nav className="flex-1 py-4 px-2 space-y-2">
           {sidebarLinks.map((link) => {
-            const active = router.asPath === link.href || router.asPath.startsWith(link.href + '/');
+            const isInicio = link.href === '/dashboard';
+            const active = isInicio
+              ? router.asPath === '/dashboard'
+              : router.asPath === link.href || router.asPath.startsWith(link.href + '/');
             const Icon = link.icon;
             return (
               <Link
@@ -65,8 +93,29 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-8">
-          <div className="text-lg font-semibold">Panel de usuario</div>
+        <header className="h-16 bg-white border-b flex items-center justify-end px-8">
+          {/* Créditos */}
+         {user && (
+  <div className="flex items-center gap-2 mr-6">
+    <Coins size={22} className="text-yellow-500" />
+    <span className={`font-bold px-2 py-1 rounded text-base
+      ${creditos !== null && creditos < 2
+        ? "bg-yellow-100 text-yellow-700"
+        : "bg-gray-100 text-gray-700"}
+    `}>
+      {creditos === null ? "…" : creditos}
+    </span>
+    <Link
+      href="/comprar-creditos"
+      className="ml-2 flex items-center gap-1 px-3 py-1 rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-800 transition"
+    >
+      <PlusCircle size={17} />
+      Comprar
+    </Link>
+  </div>
+)}
+
+
           {/* Menú usuario */}
           <Menu as="div" className="relative">
             <Menu.Button>
@@ -129,7 +178,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </header>
 
         {/* Contenido principal */}
-        <main className="flex-1 p-8 bg-gray-50">{children}</main>
+        <main className="flex-1 p-8 bg-gray-50">
+          {childrenWithCreditos}
+        </main>
       </div>
     </div>
   );
