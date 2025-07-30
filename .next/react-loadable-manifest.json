@@ -20,5 +20,11 @@
     "files": [
       "static/chunks/node_modules_react-quill_dist_quill_snow_css.js"
     ]
+  },
+  "dashboard\\articulos\\nuevo.tsx -> react-quill": {
+    "id": "dashboard\\articulos\\nuevo.tsx -> react-quill",
+    "files": [
+      "static/chunks/node_modules_react-quill_lib_index_js.js"
+    ]
   }
 }

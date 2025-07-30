@@ -2,7 +2,9 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/": "pages/index.js",
   "/dashboard": "pages/dashboard.js",
-  "/categories/[category]": "pages/categories/[category].js"
+  "/dashboard/keywords": "pages/dashboard/keywords.js",
+  "/dashboard/seo": "pages/dashboard/seo.js",
+  "/dashboard/articulos": "pages/dashboard/articulos.js",
+  "/dashboard/articulos/nuevo": "pages/dashboard/articulos/nuevo.js"
 }
