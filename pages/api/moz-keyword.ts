@@ -1,5 +1,7 @@
-// pages/api/moz-keyword.ts
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextApiRequest, NextApiResponse } from "next";
+
+// Si usas Node.js puro, importa crypto para generar el id único:
+import { randomUUID } from "crypto"; // Puedes usar cualquier string largo si quieres
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -7,22 +9,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { keyword } = req.body;
   if (!keyword) return res.status(400).json({ error: "Keyword is required" });
 
+  const MOZ_API_TOKEN = process.env.MOZ_API_TOKEN;
+  if (!MOZ_API_TOKEN) return res.status(500).json({ error: "MOZ_API_TOKEN not set" });
+
+  const endpointUrl = "https://api.moz.com/jsonrpc";
+  const payload = {
+    jsonrpc: "2.0",
+    id: randomUUID(), // O un string largo único (ej: Date.now().toString() + Math.random())
+    method: "data.keyword.search.intent.fetch",
+    params: {
+      data: {
+        keyword: keyword, // <--- la palabra a analizar
+        search_engine: "google", // Puedes poner google.com, google.es, etc
+        locale: "en-US", // Cambia si quieres otro idioma/localización
+      },
+    },
+  };
+
   try {
-    const response = await fetch("https://api.moz.com/v2/keywords/analyze", {
+    const mozRes = await fetch(endpointUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.MOZ_API_TOKEN}`,
         "Content-Type": "application/json",
+        "x-moz-token": MOZ_API_TOKEN, // ¡No Authorization!
       },
-      body: JSON.stringify({ keywords: [keyword] }),
+      body: JSON.stringify(payload),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data });
+    const data = await mozRes.json();
+    if (!mozRes.ok || data.error) {
+      return res.status(400).json({ error: data.error || "Error from Moz", details: data });
     }
-    res.status(200).json(data);
+
+    return res.status(200).json(data.result); // Aquí están los resultados
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch from Moz API" });
+    return res.status(500).json({ error: "Failed to fetch from Moz API", details: err });
   }
 }
