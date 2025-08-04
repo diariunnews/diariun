@@ -56,7 +56,10 @@ export default function KeywordsDashboard() {
       if (res.ok) {
         setMozData(data);
       } else {
-        setError(data.error?.message || "Error consultando Moz API");
+        setError(  data.error?.message ||
+    data.error ||
+    JSON.stringify(data) ||
+    "Error consultando Moz API");
       }
     } catch (err) {
       setError("Error consultando Moz API");
@@ -155,60 +158,25 @@ export default function KeywordsDashboard() {
         <div className="text-gray-500 text-lg py-8 text-center">Analizando…</div>
       ) : error ? (
         <div className="text-red-500 py-8 text-center">{error}</div>
-      ) : mozData?.results?.[0] ? (
+      ) : mozData?.result ? (
         <>
-          {/* Mostramos TODAS las métricas relevantes */}
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            <div className="bg-gray-50 rounded-lg p-5 flex flex-col items-start">
-              <div className="text-sm text-gray-500 font-medium mb-1">Volumen</div>
-              <div className="text-2xl font-bold">{mozData.results[0].search_volume ?? "-"}</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-5 flex flex-col items-start">
-              <div className="text-sm text-gray-500 font-medium mb-1">Dificultad</div>
-              <div className="text-2xl font-bold">{mozData.results[0].difficulty ?? "-"}</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-5 flex flex-col items-start">
-              <div className="text-sm text-gray-500 font-medium mb-1">Oportunidad</div>
-              <div className="text-2xl font-bold">{mozData.results[0].opportunity ?? "-"}</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-5 flex flex-col items-start">
-              <div className="text-sm text-gray-500 font-medium mb-1">Potencial</div>
-              <div className="text-2xl font-bold">{mozData.results[0].potential ?? "-"}</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-5 flex flex-col items-start">
-              <div className="text-sm text-gray-500 font-medium mb-1">CPC</div>
-              <div className="text-2xl font-bold">€{mozData.results[0].monthly_cpc ?? "-"}</div>
+          {/* INTENTS */}
+          <div className="mb-4">
+            <div className="font-medium">Intención principal:</div>
+            <div className="text-2xl text-blue-600 font-bold">
+              {mozData.result.keyword_intent?.primary_intents?.join(", ") || "No disponible"}
             </div>
           </div>
-
-          {/* SERP Results */}
-          {mozData.results[0].serp_top_results?.length > 0 && (
-            <div>
-              <div className="font-semibold text-base mb-2">SERP principal</div>
-              <table className="w-full text-left text-sm bg-gray-50 rounded-lg overflow-hidden">
-                <thead>
-                  <tr className="text-gray-500">
-                    <th className="py-2 px-2">Dominio</th>
-                    <th className="py-2 px-2">DA</th>
-                    <th className="py-2 px-2">PA</th>
-                    <th className="py-2 px-2">Enlaces</th>
-                    <th className="py-2 px-2">Spam</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mozData.results[0].serp_top_results.map((item, idx) => (
-                    <tr key={idx} className="border-t last:border-b">
-                      <td className="py-2 px-2">{item.domain}</td>
-                      <td className="py-2 px-2">{item.domain_authority}</td>
-                      <td className="py-2 px-2">{item.page_authority}</td>
-                      <td className="py-2 px-2">{item.external_links}</td>
-                      <td className={`py-2 px-2 font-bold ${item.spam_score >= 10 ? "text-red-500" : item.spam_score >= 5 ? "text-yellow-500" : "text-green-600"}`}>{item.spam_score}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <div>
+            <div className="font-medium">Intenciones (scores):</div>
+            <ul>
+              {mozData.result.keyword_intent?.all_intents?.map((intent: any, i: number) => (
+                <li key={i}>
+                  {intent.label}: <span className="font-semibold">{intent.score}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </>
       ) : (
         <div className="text-gray-400 py-8 text-center">Sin datos</div>
@@ -216,6 +184,7 @@ export default function KeywordsDashboard() {
     </div>
   </div>
 )}
+
 
       </DashboardLayout>
     </ProtectedRoute>

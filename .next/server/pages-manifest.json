@@ -3,5 +3,7 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/dashboard/keywords": "pages/dashboard/keywords.js",
-  "/api/moz-keyword": "pages/api/moz-keyword.js"
+  "/api/moz-keyword": "pages/api/moz-keyword.js",
+  "/dashboard": "pages/dashboard.js",
+  "/": "pages/index.js"
 }
