@@ -32,10 +32,15 @@
       "static/chunks/main.js",
       "static/chunks/pages/dashboard.js"
     ],
-    "/dashboard/keywords": [
+    "/dashboard/admin": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/dashboard/keywords.js"
+      "static/chunks/pages/dashboard/admin.js"
+    ],
+    "/dashboard/configuracion": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/dashboard/configuracion.js"
     ]
   },
   "ampFirstPages": []

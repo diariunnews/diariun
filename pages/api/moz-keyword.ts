@@ -17,12 +17,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const payload = {
     jsonrpc: "2.0",
     id: randomUUID(),
-    method: "data.keyword.search.intent.fetch",
+    method: "data.keyword.metrics.fetch",
     params: {
       data: {
         serp_query: {
           keyword,
-          locale: "en-US",       // prueba primero con en-US, luego puedes poner es-ES si quieres
+          locale: "es-ES",       // prueba primero con en-US, luego puedes poner es-ES si quieres
           device: "desktop",
           engine: "google"
         }

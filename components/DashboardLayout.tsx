@@ -9,6 +9,7 @@ import { Menu, Transition } from '@headlessui/react';
 import { useAuth } from '../context/AuthContext';
 import { getCreditosUsuario } from '../utils/creditos';
 import { Coins, PlusCircle } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
 
 const sidebarLinks = [
@@ -18,6 +19,8 @@ const sidebarLinks = [
   { href: '/dashboard/seo', label: 'SEO', icon: Search },
   { href: '/dashboard/imagenes', label: 'Imágenes', icon: ImageIcon },
   { href: '/dashboard/configuracion', label: 'Configuración', icon: Settings },
+  { href: '/dashboard/admin', label: 'Admin', icon: Shield, admin: true },
+
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
