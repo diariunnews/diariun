@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import DashboardLayout from "../../../components/DashboardLayout";
 import ProtectedRoute from "../../../components/ProtectedRoute";
@@ -39,17 +39,54 @@ export default function NuevoArticuloMultipaso() {
   const [saving, setSaving] = useState(false);
   const [published, setPublished] = useState(false);
 
-  // Auth y router
-  const { user } = useAuth();
+  // Auth, router y supabase
+  const { user, supabase } = useAuth();
   const router = useRouter();
+
+  // Imagen destacada
+  const [imagenDestacada, setImagenDestacada] = useState<string | null>(null);
+  const [modalImg, setModalImg] = useState<"galeria" | "upload" | "ia" | null>(null);
+
+  // Galería de imágenes
+  const [imagenesGaleria, setImagenesGaleria] = useState<any[]>([]);
+  const [loadingGaleria, setLoadingGaleria] = useState(false);
 
   // Fetch de categorías al cargar
   useEffect(() => {
+  const loadCats = async () => {
     setLoadingCats(true);
-    fetchCategorias()
-      .then((data) => setCategorias(data))
-      .finally(() => setLoadingCats(false));
-  }, []);
+    try {
+      const data = await fetchCategorias();
+      setCategorias(data);
+    } finally {
+      setLoadingCats(false);
+    }
+  };
+  loadCats();
+}, []);
+
+
+  // Cargar galería solo cuando se abre el modal
+ useEffect(() => {
+  if (modalImg === "galeria" && imagenesGaleria.length === 0 && user) {
+    const cargarGaleria = async () => {
+      setLoadingGaleria(true);
+      try {
+        const { data } = await supabase
+          .from("imagenes")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+        setImagenesGaleria(data || []);
+      } finally {
+        setLoadingGaleria(false);
+      }
+    };
+    cargarGaleria();
+  }
+  // eslint-disable-next-line
+}, [modalImg]);
+
 
   // Keywords e idiomas
   const addKeyword = () => {
@@ -77,7 +114,7 @@ export default function NuevoArticuloMultipaso() {
 
   const puedePasar = keywords.length > 0 && idiomas.length > 0 && categoriaId !== null;
 
-  // Editor
+  // Guardar artículo
   const handleSave = async (publicar = false) => {
     if (!user) {
       toast.error("Debes iniciar sesión.");
@@ -107,7 +144,7 @@ export default function NuevoArticuloMultipaso() {
         contenido: content,
         keywords,
         idiomas,
-        imagen_url: null,
+        imagen_url: imagenDestacada, // <-- ¡Imagen destacada!
         estado: publicar ? "publicado" : "borrador",
         categoria_id: categoriaId!,
       });
@@ -150,6 +187,20 @@ export default function NuevoArticuloMultipaso() {
 
         <div className="flex justify-center">
           <div className="w-full max-w-2xl mt-4 mb-12 bg-white rounded-2xl shadow-lg px-10 py-10 relative">
+
+                    {/* INDICADOR MULTIPASO (STEPPER) */}
+        <div className="flex items-center justify-center gap-0 mb-10 mt-2">
+          <div className="flex items-center gap-2">
+            <div className={`rounded-full h-7 w-7 flex items-center justify-center font-bold text-base border-2 ${step === 1 ? "bg-black text-white border-black" : "bg-gray-200 text-gray-700 border-gray-300"}`}>1</div>
+            <span className={`ml-2 font-semibold ${step === 1 ? "text-black" : "text-gray-400"}`}>Seleccionar datos</span>
+          </div>
+          <div className={`w-10 h-0.5 mx-2 ${step === 2 ? "bg-black" : "bg-gray-300"}`}></div>
+          <div className="flex items-center gap-2">
+            <div className={`rounded-full h-7 w-7 flex items-center justify-center font-bold text-base border-2 ${step === 2 ? "bg-black text-white border-black" : "bg-gray-200 text-gray-700 border-gray-300"}`}>2</div>
+            <span className={`ml-2 font-semibold ${step === 2 ? "text-black" : "text-gray-400"}`}>Editor y publicación</span>
+          </div>
+        </div>
+
 
             {/* ---------- Paso 1: Selección ---------- */}
             {step === 1 && (
@@ -360,6 +411,42 @@ export default function NuevoArticuloMultipaso() {
                   />
                 </div>
 
+                {/* Imagen destacada */}
+                <div className="mb-8">
+                  <label className="font-semibold mb-2 block">Imagen destacada</label>
+                  {imagenDestacada ? (
+                    <div className="relative inline-block mb-3">
+                      <img src={imagenDestacada} alt="Imagen destacada" className="rounded-xl w-60 h-40 object-cover border" />
+                      <button
+                        className="absolute top-2 right-2 bg-white/80 hover:bg-red-500 hover:text-white text-gray-800 p-1 rounded-full shadow"
+                        onClick={() => setImagenDestacada(null)}
+                        title="Quitar imagen"
+                      >×</button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-3 mb-2">
+                      <button
+                        className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-semibold hover:bg-blue-200 transition"
+                        onClick={() => setModalImg("galeria")}
+                      >
+                        Elegir de galería
+                      </button>
+                      <button
+                        className="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-semibold hover:bg-green-200 transition"
+                        onClick={() => setModalImg("upload")}
+                      >
+                        Subir imagen
+                      </button>
+                      <button
+                        className="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg font-semibold hover:bg-purple-200 transition"
+                        onClick={() => setModalImg("ia")}
+                      >
+                        Crear con IA
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {/* Botones */}
                 <div className="flex gap-6 justify-end">
                   <button
@@ -387,9 +474,188 @@ export default function NuevoArticuloMultipaso() {
               </>
             )}
 
+            {/* ----- MODALES DE IMAGEN DESTACADA ------ */}
+            {modalImg === "galeria" && (
+              <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg relative">
+                  <button className="absolute top-3 right-4 text-gray-400 hover:text-black" onClick={() => setModalImg(null)}>✕</button>
+                  <h3 className="text-xl font-bold mb-6">Elige una imagen de tu galería</h3>
+                  {loadingGaleria ? (
+                    <div className="text-gray-500 py-8 text-center">Cargando…</div>
+                  ) : imagenesGaleria.length === 0 ? (
+                    <div className="text-gray-400 py-8 text-center">No tienes imágenes aún.</div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-4">
+                      {imagenesGaleria.map(img => (
+                        <img
+                          key={img.id}
+                          src={img.url}
+                          alt={img.title || "Imagen"}
+                          className="w-36 h-28 object-cover rounded-xl border cursor-pointer hover:ring-2 ring-blue-400"
+                          onClick={() => {
+                            setImagenDestacada(img.url);
+                            setModalImg(null);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {modalImg === "upload" && (
+              <SubirImagenModal
+                user={user}
+                supabase={supabase}
+                onSuccess={(url: string) => { setImagenDestacada(url); setModalImg(null); }}
+                onClose={() => setModalImg(null)}
+              />
+            )}
+
+            {modalImg === "ia" && (
+              <CrearImagenIAModal
+                user={user}
+                supabase={supabase}
+                onSuccess={(url: string) => { setImagenDestacada(url); setModalImg(null); }}
+                onClose={() => setModalImg(null)}
+              />
+            )}
+
           </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>
+  );
+}
+
+// ------- MODALES AUXILIARES --------
+
+// SUBIR IMAGEN MODAL
+function SubirImagenModal({ user, supabase, onSuccess, onClose }: any) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fileRef.current?.files?.[0]) return;
+    setUploading(true);
+    setError(null);
+    const file = fileRef.current.files[0];
+    const ext = file.name.split('.').pop();
+    const filename = `${user.id}/${Date.now()}.${ext}`;
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from("imagenes")
+      .upload(filename, file, { cacheControl: "3600", upsert: false });
+    if (storageError) {
+      setError("Error subiendo imagen: " + storageError.message);
+      setUploading(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("imagenes").getPublicUrl(filename);
+    const publicUrl = urlData?.publicUrl;
+    if (publicUrl) onSuccess(publicUrl);
+    setUploading(false);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+      <button className="absolute top-3 right-4 text-gray-400 hover:text-black" onClick={onClose}>✕</button>
+      <h3 className="text-xl font-bold mb-6">Subir imagen</h3>
+      <form className="space-y-5" onSubmit={handleUpload}>
+        <input
+          type="file"
+          ref={fileRef}
+          accept="image/*"
+          required
+          className="block w-full border rounded-lg p-2"
+          disabled={uploading}
+        />
+        <button
+          type="submit"
+          disabled={uploading}
+          className="bg-black text-white w-full py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+        >
+          {uploading ? "Subiendo…" : "Subir"}
+        </button>
+        {error && <div className="text-red-600 text-sm">{error}</div>}
+      </form>
+    </div>
+  );
+}
+
+// GENERAR IMAGEN IA MODAL
+function CrearImagenIAModal({ user, supabase, onSuccess, onClose }: any) {
+  const [prompt, setPrompt] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleAIGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prompt.trim()) return;
+    setGenerating(true);
+    setError(null);
+
+    // Llama a tu endpoint SD ya preparado
+    const res = await fetch("/api/sd-generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+    if (!res.ok) {
+      setError("Error generando la imagen IA.");
+      setGenerating(false);
+      return;
+    }
+    const { imageUrl } = await res.json();
+    if (!imageUrl) {
+      setError("No se pudo obtener la imagen generada.");
+      setGenerating(false);
+      return;
+    }
+
+    // Descarga la imagen y súbela a storage
+    const imageBlob = await fetch(imageUrl).then(r => r.blob());
+    const ext = "png";
+    const filename = `${user.id}/ai-${Date.now()}.${ext}`;
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from("imagenes")
+      .upload(filename, imageBlob, { cacheControl: "3600", upsert: false, contentType: "image/png" });
+    if (storageError) {
+      setError("Error subiendo imagen: " + storageError.message);
+      setGenerating(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("imagenes").getPublicUrl(filename);
+    const publicUrl = urlData?.publicUrl;
+    if (publicUrl) onSuccess(publicUrl);
+    setGenerating(false);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+      <button className="absolute top-3 right-4 text-gray-400 hover:text-black" onClick={onClose}>✕</button>
+      <h3 className="text-xl font-bold mb-6">Crear imagen con IA</h3>
+      <form className="space-y-5" onSubmit={handleAIGenerate}>
+        <input
+          type="text"
+          value={prompt}
+          onChange={e => setPrompt(e.target.value)}
+          placeholder="Describe la imagen a crear"
+          className="block w-full border rounded-lg p-2"
+          required
+          disabled={generating}
+        />
+        <button
+          type="submit"
+          disabled={generating}
+          className="bg-purple-600 text-white w-full py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+        >
+          {generating ? "Generando…" : "Crear con IA"}
+        </button>
+        {error && <div className="text-red-600 text-sm">{error}</div>}
+      </form>
+    </div>
   );
 }

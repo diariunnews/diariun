@@ -3,16 +3,18 @@ import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 import { Menu, Transition } from "@headlessui/react";
-import { UserCircle, LogOut, User, LayoutDashboard } from "lucide-react";
+import { LogOut, User, LayoutDashboard } from "lucide-react";
 import { Fragment } from "react";
 
 export default function Header() {
-  const { user, supabase } = useAuth();
+  const { user, userProfile, logout } = useAuth();
   const { openModal } = useModal();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.reload();
+  // Inicial para el avatar fallback
+  const getInicial = () => {
+    if (userProfile?.full_name) return userProfile.full_name[0].toUpperCase();
+    if (user?.email) return user.email[0].toUpperCase();
+    return "U";
   };
 
   return (
@@ -60,7 +62,17 @@ export default function Header() {
           ) : (
             <Menu as="div" className="relative">
               <Menu.Button>
-                <UserCircle size={28} className="text-gray-700 hover:text-black transition" />
+                {userProfile?.avatar_url ? (
+                  <img
+                    src={userProfile.avatar_url}
+                    alt="Avatar"
+                    className="w-8 h-8 rounded-full object-cover border border-gray-300"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-lg uppercase">
+                    {getInicial()}
+                  </div>
+                )}
               </Menu.Button>
               <Transition
                 as={Fragment}
@@ -102,7 +114,7 @@ export default function Header() {
                     <Menu.Item>
                       {({ active }) => (
                         <button
-                          onClick={handleLogout}
+                          onClick={logout}
                           className={`${
                             active ? "bg-gray-100" : ""
                           } group flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-800`}

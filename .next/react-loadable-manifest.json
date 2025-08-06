@@ -1,4 +1,10 @@
 {
+  "..\\components\\DashboardLayout.tsx -> ../utils/creditos": {
+    "id": "..\\components\\DashboardLayout.tsx -> ../utils/creditos",
+    "files": [
+      "static/chunks/utils_creditos_ts.js"
+    ]
+  },
   "..\\node_modules\\@supabase\\auth-js\\dist\\module\\lib\\helpers.js -> @supabase/node-fetch": {
     "id": "..\\node_modules\\@supabase\\auth-js\\dist\\module\\lib\\helpers.js -> @supabase/node-fetch",
     "files": []
@@ -19,6 +25,12 @@
     "id": "_app.tsx -> react-quill/dist/quill.snow.css",
     "files": [
       "static/chunks/node_modules_react-quill_dist_quill_snow_css.js"
+    ]
+  },
+  "dashboard\\articulos\\nuevo.tsx -> react-quill": {
+    "id": "dashboard\\articulos\\nuevo.tsx -> react-quill",
+    "files": [
+      "static/chunks/node_modules_react-quill_lib_index_js.js"
     ]
   }
 }

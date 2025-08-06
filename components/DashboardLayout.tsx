@@ -1,16 +1,10 @@
-// components/DashboardLayout.tsx
-import React from 'react';
-import { ReactNode, Fragment, useEffect, useState } from 'react';
+import React, { ReactNode, Fragment } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { Home, FileText, Search, Image as ImageIcon, Settings, UserCircle, LogOut, User, ArrowLeft, Tag } from 'lucide-react';
+import { Home, FileText, Search, Image as ImageIcon, Settings, LogOut, User, ArrowLeft, Tag, Shield, Coins, PlusCircle } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
 import { useAuth } from '../context/AuthContext';
-import { getCreditosUsuario } from '../utils/creditos';
-import { Coins, PlusCircle } from 'lucide-react';
-import { Shield } from 'lucide-react';
-
 
 const sidebarLinks = [
   { href: '/dashboard', label: 'Inicio', icon: Home },
@@ -20,38 +14,38 @@ const sidebarLinks = [
   { href: '/dashboard/imagenes', label: 'Imágenes', icon: ImageIcon },
   { href: '/dashboard/configuracion', label: 'Configuración', icon: Settings },
   { href: '/dashboard/admin', label: 'Admin', icon: Shield, admin: true },
-
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { user, supabase } = useAuth();
-  const [creditos, setCreditos] = useState<number | null>(null);
+  const { user, userProfile, logout } = useAuth();
+  const [creditos, setCreditos] = React.useState<number | null>(null);
 
-  // Función para refrescar saldo de créditos
+  // Créditos
   const refreshCreditos = async () => {
     if (user) {
+      const { getCreditosUsuario } = await import('../utils/creditos');
       const saldo = await getCreditosUsuario(user.id);
       setCreditos(saldo);
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     refreshCreditos();
     // eslint-disable-next-line
   }, [user]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/';
-  };
-
-  // Permitir que el hijo reciba la función para refrescar créditos
   const childrenWithCreditos =
-  user && children && React.isValidElement(children)
-    ? React.cloneElement(children as React.ReactElement<any>, { onCreditosChange: refreshCreditos })
-    : children;
+    user && children && React.isValidElement(children)
+      ? React.cloneElement(children as React.ReactElement<any>, { onCreditosChange: refreshCreditos })
+      : children;
 
+  // Inicial para el avatar fallback
+  const getInicial = () => {
+    if (userProfile?.full_name) return userProfile.full_name[0].toUpperCase();
+    if (user?.email) return user.email[0].toUpperCase();
+    return "U";
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-50">
@@ -76,6 +70,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               ? router.asPath === '/dashboard'
               : router.asPath === link.href || router.asPath.startsWith(link.href + '/');
             const Icon = link.icon;
+            if (link.admin && userProfile?.role !== 'admin') return null;
             return (
               <Link
                 key={link.href}
@@ -98,31 +93,40 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* Header */}
         <header className="h-16 bg-white border-b flex items-center justify-end px-8">
           {/* Créditos */}
-         {user && (
-  <div className="flex items-center gap-2 mr-6">
-    <Coins size={22} className="text-yellow-500" />
-    <span className={`font-bold px-2 py-1 rounded text-base
-      ${creditos !== null && creditos < 2
-        ? "bg-yellow-100 text-yellow-700"
-        : "bg-gray-100 text-gray-700"}
-    `}>
-      {creditos === null ? "…" : creditos}
-    </span>
-    <Link
-      href="/comprar-creditos"
-      className="ml-2 flex items-center gap-1 px-3 py-1 rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-800 transition"
-    >
-      <PlusCircle size={17} />
-      Comprar
-    </Link>
-  </div>
-)}
+          {user && (
+            <div className="flex items-center gap-2 mr-6">
+              <Coins size={22} className="text-yellow-500" />
+              <span className={`font-bold px-2 py-1 rounded text-base
+                ${creditos !== null && creditos < 2
+                  ? "bg-yellow-100 text-yellow-700"
+                  : "bg-gray-100 text-gray-700"}
+              `}>
+                {creditos === null ? "…" : creditos}
+              </span>
+              <Link
+                href="/comprar-creditos"
+                className="ml-2 flex items-center gap-1 px-3 py-1 rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-800 transition"
+              >
+                <PlusCircle size={17} />
+                Comprar
+              </Link>
+            </div>
+          )}
 
-
-          {/* Menú usuario */}
+          {/* Menú usuario con AVATAR y nombre */}
           <Menu as="div" className="relative">
             <Menu.Button>
-              <UserCircle size={28} className="text-gray-700 hover:text-black transition" />
+              {userProfile?.avatar_url ? (
+                <img
+                  src={userProfile.avatar_url}
+                  alt="Avatar"
+                  className="w-9 h-9 rounded-full object-cover border border-gray-300"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-xl uppercase">
+                  {getInicial()}
+                </div>
+              )}
             </Menu.Button>
             <Transition
               as={Fragment}
@@ -164,7 +168,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        onClick={handleLogout}
+                        onClick={logout}
                         className={`${
                           active ? "bg-gray-100" : ""
                         } group flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-800`}
