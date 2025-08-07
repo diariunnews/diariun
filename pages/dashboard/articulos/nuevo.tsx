@@ -20,6 +20,22 @@ const idiomasDisponibles = [
   { code: "en", label: "Inglés" },
   { code: "fr", label: "Francés" },
 ];
+// --- Lista de palabras prohibidas ---
+const PALABRAS_PROHIBIDAS = [
+  "pornografía", "porno", "xxx", "sexual", "violación",
+  "pedofilia", "pederastia", "puta", "follar", "mierda", "joder",
+  "puto", "putas", "sexo", "masturbar", "masturbación",
+  "coño", "polla", "maricón", "cabron", "cabrón", "gilipollas",
+  "violento", "violencia", "drogas", "asesinato", "suicidio",
+  "terrorismo", "matar", "muerte", "asesino"
+  // Añade las que quieras
+];
+function contienePalabraProhibida(texto: string): string | null {
+  const lower = texto.toLowerCase();
+  const match = PALABRAS_PROHIBIDAS.find(palabra => lower.includes(palabra));
+  return match || null;
+}
+
 
 export default function NuevoArticuloMultipaso() {
   // Multipaso
@@ -115,52 +131,67 @@ export default function NuevoArticuloMultipaso() {
   const puedePasar = keywords.length > 0 && idiomas.length > 0 && categoriaId !== null;
 
   // Guardar artículo
-  const handleSave = async (publicar = false) => {
-    if (!user) {
-      toast.error("Debes iniciar sesión.");
+const handleSave = async (publicar = false) => {
+  if (!user) {
+    toast.error("Debes iniciar sesión.");
+    return;
+  }
+
+  // --- Validación de contenido prohibido ---
+  const prohibidaEnTitulo = contienePalabraProhibida(title);
+  const prohibidaEnContenido = contienePalabraProhibida(content);
+  const prohibidaEnKeyword = keywords.find(kw => contienePalabraProhibida(kw));
+  if (prohibidaEnTitulo || prohibidaEnContenido || prohibidaEnKeyword) {
+    toast.error(
+      `Tu artículo contiene contenido prohibido (${prohibidaEnTitulo || prohibidaEnContenido || prohibidaEnKeyword}). Por favor, elimina esa palabra antes de continuar.`,
+      { duration: 7000 }
+    );
+    return;
+  }
+  // --- Fin validación ---
+
+  if (publicar) {
+    // Consulta saldo antes de publicar
+    const creditos = await getCreditosUsuario(user.id);
+    if (creditos < 1) {
+      toast.error(
+        <span>
+          No tienes créditos suficientes para publicar.<br />
+          <Link href="/comprar-creditos" className="underline text-blue-600">Comprar créditos</Link>
+        </span>,
+        { duration: 6000 }
+      );
       return;
     }
-    if (publicar) {
-      // Consulta saldo antes de publicar
-      const creditos = await getCreditosUsuario(user.id);
-      if (creditos < 1) {
-        toast.error(
-          <span>
-            No tienes créditos suficientes para publicar.<br />
-            <Link href="/comprar-creditos" className="underline text-blue-600">Comprar créditos</Link>
-          </span>,
-          { duration: 6000 }
-        );
-        return;
-      }
-    }
+  }
 
-    setSaving(true);
-    try {
-      // 1. Crear artículo
-      await crearArticulo({
-        user_id: user.id,
-        titulo: title,
-        contenido: content,
-        keywords,
-        idiomas,
-        imagen_url: imagenDestacada, // <-- ¡Imagen destacada!
-        estado: publicar ? "publicado" : "borrador",
-        categoria_id: categoriaId!,
-      });
-      // 2. Si es publicar, descontar crédito
-      if (publicar) await restarCredito(user.id);
+  setSaving(true);
+  try {
+    // 1. Crear artículo
+    await crearArticulo({
+      user_id: user.id,
+      titulo: title,
+      contenido: content,
+      keywords,
+      idiomas,
+      imagen_url: imagenDestacada, // <-- ¡Imagen destacada!
+      estado: publicar ? "publicado" : "borrador",
+      categoria_id: categoriaId!,
+    });
+    // 2. Si es publicar, descontar crédito
+    if (publicar) await restarCredito(user.id);
 
-      setSaving(false);
-      setPublished(publicar);
-      toast.success(publicar ? "¡Artículo publicado!" : "Borrador guardado");
-      // Redirigir tras publicar
-      if (publicar) setTimeout(() => router.push("/dashboard/articulos"), 1200);
-    } catch (err) {
-      setSaving(false);
-      toast.error("Error al guardar el artículo");
-    }
-  };
+    setSaving(false);
+    setPublished(publicar);
+    toast.success(publicar ? "¡Artículo publicado!" : "Borrador guardado");
+    // Redirigir tras publicar
+    if (publicar) setTimeout(() => router.push("/dashboard/articulos"), 1200);
+  } catch (err) {
+    setSaving(false);
+    toast.error("Error al guardar el artículo");
+  }
+};
+
 
   return (
     <ProtectedRoute>

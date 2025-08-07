@@ -2,7 +2,7 @@ import React, { ReactNode, Fragment } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { Home, FileText, Search, Image as ImageIcon, Settings, LogOut, User, ArrowLeft, Tag, Shield, Coins, PlusCircle } from 'lucide-react';
+import { Home, FileText, Search, Image as ImageIcon, Settings, LogOut, User, ArrowLeft, Tag, Shield, Coins, PlusCircle, HelpCircle } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,6 +14,8 @@ const sidebarLinks = [
   { href: '/dashboard/imagenes', label: 'Imágenes', icon: ImageIcon },
   { href: '/dashboard/configuracion', label: 'Configuración', icon: Settings },
   { href: '/dashboard/admin', label: 'Admin', icon: Shield, admin: true },
+  { href: '/dashboard/soporte', label: 'Soporte', icon: HelpCircle }
+
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
