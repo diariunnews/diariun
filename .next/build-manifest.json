@@ -36,11 +36,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/dashboard/configuracion.js"
-    ],
-    "/dashboard/soporte": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/dashboard/soporte.js"
     ]
   },
   "ampFirstPages": []
