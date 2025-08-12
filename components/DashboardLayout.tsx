@@ -2,7 +2,10 @@ import React, { ReactNode, Fragment } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { Home, FileText, Search, Image as ImageIcon, Settings, LogOut, User, ArrowLeft, Tag, Shield, Coins, PlusCircle, HelpCircle } from 'lucide-react';
+import {
+  Home, FileText, Search, Image as ImageIcon, Settings,
+  LogOut, User, ArrowLeft, Tag, Shield, Coins, PlusCircle, HelpCircle
+} from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,12 +18,11 @@ const sidebarLinks = [
   { href: '/dashboard/configuracion', label: 'Configuración', icon: Settings },
   { href: '/dashboard/admin', label: 'Admin', icon: Shield, admin: true },
   { href: '/dashboard/soporte', label: 'Soporte', icon: HelpCircle }
-
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { user, userProfile, logout } = useAuth();
+  const { user, userProfile, logout, isAdmin } = useAuth();
   const [creditos, setCreditos] = React.useState<number | null>(null);
 
   // Créditos
@@ -34,7 +36,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   React.useEffect(() => {
     refreshCreditos();
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const childrenWithCreditos =
@@ -42,11 +44,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       ? React.cloneElement(children as React.ReactElement<any>, { onCreditosChange: refreshCreditos })
       : children;
 
-  // Inicial para el avatar fallback
+  // Inicial para el avatar (fallback)
   const getInicial = () => {
-    if (userProfile?.full_name) return userProfile.full_name[0].toUpperCase();
-    if (user?.email) return user.email[0].toUpperCase();
-    return "U";
+    const name =
+      userProfile?.display_name ||
+      (user?.user_metadata as any)?.full_name ||
+      user?.email ||
+      'U';
+    return name[0]?.toUpperCase() || 'U';
   };
 
   return (
@@ -66,26 +71,27 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </Link>
         </div>
         <nav className="flex-1 py-4 px-2 space-y-2">
-          {sidebarLinks.map((link) => {
-            const isInicio = link.href === '/dashboard';
-            const active = isInicio
-              ? router.asPath === '/dashboard'
-              : router.asPath === link.href || router.asPath.startsWith(link.href + '/');
-            const Icon = link.icon;
-            if (link.admin && userProfile?.role !== 'admin') return null;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition font-medium
-                  ${active ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}
-                `}
-              >
-                <Icon size={20} />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
+          {sidebarLinks
+            .filter(link => !link.admin || isAdmin)
+            .map((link) => {
+              const isInicio = link.href === '/dashboard';
+              const active = isInicio
+                ? router.asPath === '/dashboard'
+                : router.asPath === link.href || router.asPath.startsWith(link.href + '/');
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition font-medium
+                    ${active ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}
+                  `}
+                >
+                  <Icon size={20} />
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
         </nav>
         <div className="p-4 text-xs text-gray-400">© {new Date().getFullYear()} Diariun</div>
       </aside>
@@ -115,10 +121,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </div>
           )}
 
-          {/* Menú usuario con AVATAR y nombre */}
+          {/* Menú usuario con AVATAR */}
           <Menu as="div" className="relative">
             <Menu.Button>
               {userProfile?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={userProfile.avatar_url}
                   alt="Avatar"
@@ -145,9 +152,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     {({ active }) => (
                       <Link
                         href="/"
-                        className={`${
-                          active ? "bg-gray-100" : ""
-                        } group flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-800`}
+                        className={`${active ? "bg-gray-100" : ""} group flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-800`}
                       >
                         <ArrowLeft size={16} />
                         Volver a la web principal
@@ -158,9 +163,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     {({ active }) => (
                       <Link
                         href="/profile"
-                        className={`${
-                          active ? "bg-gray-100" : ""
-                        } group flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-800`}
+                        className={`${active ? "bg-gray-100" : ""} group flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-800`}
                       >
                         <User size={16} />
                         Mi perfil
@@ -171,9 +174,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     {({ active }) => (
                       <button
                         onClick={logout}
-                        className={`${
-                          active ? "bg-gray-100" : ""
-                        } group flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-800`}
+                        className={`${active ? "bg-gray-100" : ""} group flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-800`}
                       >
                         <LogOut size={16} />
                         Cerrar sesión

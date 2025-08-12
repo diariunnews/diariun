@@ -10,12 +10,20 @@ export default function Header() {
   const { user, userProfile, logout } = useAuth();
   const { openModal } = useModal();
 
-  // Inicial para el avatar fallback
+  // Iniciales para el avatar (fallback)
   const getInicial = () => {
-    if (userProfile?.full_name) return userProfile.full_name[0].toUpperCase();
-    if (user?.email) return user.email[0].toUpperCase();
-    return "U";
+    const name =
+      userProfile?.display_name ||
+      (user?.user_metadata as any)?.full_name ||
+      user?.email ||
+      "U";
+    return name[0]?.toUpperCase() || "U";
   };
+
+  const avatarSrc =
+    userProfile?.avatar_url ||
+    (user?.user_metadata as any)?.avatar_url ||
+    null;
 
   return (
     <header
@@ -62,9 +70,10 @@ export default function Header() {
           ) : (
             <Menu as="div" className="relative">
               <Menu.Button>
-                {userProfile?.avatar_url ? (
+                {avatarSrc ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={userProfile.avatar_url}
+                    src={avatarSrc}
                     alt="Avatar"
                     className="w-8 h-8 rounded-full object-cover border border-gray-300"
                   />
@@ -101,7 +110,7 @@ export default function Header() {
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          href="/profile"
+                          href="/dashboard/configuracion"
                           className={`${
                             active ? "bg-gray-100" : ""
                           } group flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-800`}
