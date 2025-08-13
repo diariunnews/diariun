@@ -3,6 +3,7 @@ import DashboardLayout from "../../../components/DashboardLayout";
 import AdminRoute from "../../../components/AdminRoute";
 import { useAuth } from "../../../context/AuthContext";
 import { LifeBuoy, RefreshCcw, Search, ExternalLink, MessagesSquare } from "lucide-react";
+import BackButton from "../../../components/BackButton";
 
 /**
  * Internos (mirror en Supabase)
@@ -141,6 +142,7 @@ export default function AdminTickets() {
   return (
     <AdminRoute>
       <DashboardLayout>
+        <BackButton backHref="/dashboard/admin" className="mb-6" />
         <div className="mx-auto max-w-6xl">
           <div className="flex items-center gap-3 mb-6">
             <LifeBuoy className="text-blue-600" size={28} />

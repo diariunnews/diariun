@@ -3,6 +3,8 @@ import DashboardLayout from "../../../components/DashboardLayout";
 import AdminRoute from "../../../components/AdminRoute";
 import { useAuth } from "../../../context/AuthContext";
 import { Layers, Plus, Trash2, RefreshCcw, Search, Pencil, Save, X, ToggleLeft, ToggleRight } from "lucide-react";
+import BackButton from "../../../components/BackButton";
+
 
 type Plan = {
   id: number;
@@ -135,6 +137,7 @@ export default function AdminPlanes() {
   return (
     <AdminRoute>
       <DashboardLayout>
+        <BackButton backHref="/dashboard/admin" className="mb-6" />
         <div className="mx-auto max-w-5xl">
           <div className="flex items-center gap-3 mb-8">
             <Layers className="text-blue-600" size={28} />

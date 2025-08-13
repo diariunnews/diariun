@@ -105,17 +105,20 @@ export default function AdminHome() {
           <div className="bg-white rounded-2xl shadow p-6 mb-10">
             <h2 className="text-xl font-bold mb-4">Acciones rápidas</h2>
             <div className="flex flex-wrap gap-3">
-              <Link href="/dashboard/admin/users" className="px-4 py-2 bg-black text-white rounded-lg font-semibold">
+              <Link href="/dashboard/admin/usuarios" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
                 Gestionar usuarios
               </Link>
-              <Link href="/dashboard/admin/categorias" className="px-4 py-2 bg-black text-white rounded-lg font-semibold">
+              <Link href="/dashboard/admin/categorias" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
                 Gestionar categorías
               </Link>
-              <Link href="/dashboard/soporte" className="px-4 py-2 bg-black text-white rounded-lg font-semibold">
-                Tickets (Zammad)
+              <Link href="/dashboard/admin/Tickets" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
+                Tickets
               </Link>
               <Link href="/dashboard/articulos" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
                 Ver artículos
+              </Link>
+              <Link href="/dashboard/admin/planes" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
+                Ver Planes
               </Link>
             </div>
           </div>

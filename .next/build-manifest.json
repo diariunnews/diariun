@@ -36,6 +36,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/dashboard/admin.js"
+    ],
+    "/dashboard/admin/usuarios": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/dashboard/admin/usuarios.js"
     ]
   },
   "ampFirstPages": []
