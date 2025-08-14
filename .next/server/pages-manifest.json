@@ -2,9 +2,13 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/": "pages/index.js",
-  "/dashboard/admin/usuarios": "pages/dashboard/admin/usuarios.js",
-  "/dashboard": "pages/dashboard.js",
+  "/api/admin/stats": "pages/api/admin/stats.js",
+  "/api/admin/users": "pages/api/admin/users.js",
   "/dashboard/admin": "pages/dashboard/admin.js",
-  "/api/admin/users": "pages/api/admin/users.js"
+  "/dashboard/keywords": "pages/dashboard/keywords.js",
+  "/dashboard/articulos": "pages/dashboard/articulos.js",
+  "/dashboard/admin/usuarios": "pages/dashboard/admin/usuarios.js",
+  "/dashboard/admin/planes": "pages/dashboard/admin/planes.js",
+  "/dashboard/soporte": "pages/dashboard/soporte.js",
+  "/dashboard/imagenes": "pages/dashboard/imagenes.js"
 }

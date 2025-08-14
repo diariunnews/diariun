@@ -4,6 +4,7 @@ import DashboardLayout from "../../../components/DashboardLayout";
 import AdminRoute from "../../../components/AdminRoute";
 import { useAuth } from "../../../context/AuthContext";
 import { Users, FileText, Image as ImageIcon, Tag, ChevronRight, Activity } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 type Metric = {
   label: string;
@@ -23,44 +24,56 @@ type LogRow = {
 export default function AdminHome() {
   const { supabase } = useAuth();
   const [metrics, setMetrics] = useState<Metric[]>([
-    { label: "Usuarios", count: null, href: "/dashboard/admin/users", icon: Users },
-    { label: "Artículos", count: null, href: "/dashboard/articulos", icon: FileText },
-    { label: "Imágenes", count: null, href: "/dashboard/imagenes", icon: ImageIcon },
-    { label: "Keywords", count: null, href: "/dashboard/keywords", icon: Tag },
+    // 🔧 rutas corregidas
+    { label: "Usuarios",  count: null, href: "/dashboard/admin/usuarios", icon: Users },
+    { label: "Artículos", count: null, href: "/dashboard/articulos",       icon: FileText },
+    { label: "Imágenes",  count: null, href: "/dashboard/imagenes",        icon: ImageIcon },
+    { label: "Keywords",  count: null, href: "/dashboard/keywords",        icon: Tag },
   ]);
   const [logs, setLogs] = useState<LogRow[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Adjunta el JWT actual en Authorization
+  const authHeader = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   useEffect(() => {
     const load = async () => {
-      setLoading(true);
-      // Contadores (count: 'exact', head: true)
-      const [{ count: cUsers }, { count: cArts }, { count: cImgs }, { count: cKws }] =
-        await Promise.all([
-          supabase.from("profiles").select("*", { count: "exact", head: true }),
-          supabase.from("articulos").select("*", { count: "exact", head: true }),
-          supabase.from("imagenes").select("*", { count: "exact", head: true }),
-          supabase.from("keywords").select("*", { count: "exact", head: true }),
-        ]);
+      try {
+        setLoading(true);
+        const headers = await authHeader();
 
-      setMetrics((prev) =>
-        prev.map((m) => {
-          if (m.label === "Usuarios") return { ...m, count: cUsers ?? 0 };
-          if (m.label === "Artículos") return { ...m, count: cArts ?? 0 };
-          if (m.label === "Imágenes") return { ...m, count: cImgs ?? 0 };
-          if (m.label === "Keywords") return { ...m, count: cKws ?? 0 };
-          return m;
-        })
-      );
+        // ✅ Stats desde API (Service Role + guard)
+        const statsRes = await fetch("/api/admin/stats", { headers });
+        const stats = await statsRes.json();
+        if (!statsRes.ok) throw new Error(stats.error || "Error cargando estadísticas");
 
-      // Últimos logs
-      const { data: logsData } = await supabase
-        .from("logs")
-        .select("id, fecha, user_id, tipo, mensaje")
-        .order("fecha", { ascending: false })
-        .limit(6);
-      setLogs((logsData as any) || []);
-      setLoading(false);
+        setMetrics(prev =>
+          prev.map(m => {
+            if (m.label === "Usuarios")  return { ...m, count: stats.users    ?? 0 };
+            if (m.label === "Artículos") return { ...m, count: stats.articles ?? 0 };
+            if (m.label === "Imágenes")  return { ...m, count: stats.images   ?? 0 };
+            if (m.label === "Keywords")  return { ...m, count: stats.keywords ?? 0 };
+            return m;
+          })
+        );
+
+        // ✅ Logs desde API
+        const logsRes = await fetch("/api/admin/logs?limit=6", { headers });
+        const logsData = await logsRes.json();
+        if (!logsRes.ok) throw new Error(logsData.error || "Error cargando logs");
+        setLogs(logsData.items || []);
+      } catch (e: any) {
+        toast.error(e.message);
+        // fallback para no romper UI
+        setMetrics(prev => prev.map(m => ({ ...m, count: 0 })));
+        setLogs([]);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -105,21 +118,11 @@ export default function AdminHome() {
           <div className="bg-white rounded-2xl shadow p-6 mb-10">
             <h2 className="text-xl font-bold mb-4">Acciones rápidas</h2>
             <div className="flex flex-wrap gap-3">
-              <Link href="/dashboard/admin/usuarios" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
-                Gestionar usuarios
-              </Link>
-              <Link href="/dashboard/admin/categorias" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
-                Gestionar categorías
-              </Link>
-              <Link href="/dashboard/admin/Tickets" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
-                Tickets
-              </Link>
-              <Link href="/dashboard/articulos" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
-                Ver artículos
-              </Link>
-              <Link href="/dashboard/admin/planes" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">
-                Ver Planes
-              </Link>
+              <Link href="/dashboard/admin/usuarios"   className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">Gestionar usuarios</Link>
+              <Link href="/dashboard/admin/categorias" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">Gestionar categorías</Link>
+              <Link href="/dashboard/Tickets"          className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">Tickets</Link>
+              <Link href="/dashboard/articulos"        className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">Ver artículos</Link>
+              <Link href="/dashboard/admin/planes"     className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold">Ver Planes</Link>
             </div>
           </div>
 
